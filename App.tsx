@@ -239,7 +239,7 @@ export default function App() {
 
   return (
     <div className="min-h-[100dvh] w-full bg-[#0d141a] font-display text-white flex items-center justify-center p-3 sm:p-6 select-none">
-      <div className={`w-full h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] bg-[#171e24] rounded-[30px] shadow-2xl overflow-hidden flex ${isLandscape ? 'max-w-[1100px] flex-row' : 'max-w-[492px] flex-col'}`}>
+      <div className={`w-full bg-[#171e24] rounded-[30px] shadow-2xl overflow-hidden flex ${isLandscape ? 'max-w-[1100px] h-[min(760px,calc(100dvh-48px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'}`}>
         <section className={`${isLandscape ? 'w-[52%] h-full' : 'flex-[4.5]'} min-h-0 px-6 pt-5 pb-6 flex flex-col`}>
           <div className="relative h-12 mb-3 shrink-0">
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -260,8 +260,8 @@ export default function App() {
           </div>
         </section>
 
-        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#1b3446]' : 'flex-[5.5] border-t border-[#1b3446]'} min-h-0 bg-[#151b20] px-3 pb-4 pt-2 flex flex-col`}>
-          <div className="grid grid-cols-5 grid-rows-5 gap-2 w-full h-[88%] min-h-0 mt-auto">
+        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#1b3446] px-3 py-4 justify-center' : 'flex-[5.5] border-t border-[#1b3446] px-3 pb-4 pt-2'} min-h-0 bg-[#151b20] flex flex-col`}>
+          <div className="grid grid-cols-5 grid-rows-5 gap-2 w-full h-[88%] min-h-0">
             <CalculatorButton label="Yds" type={ButtonType.Primary} onClick={() => handleUnit('yard')} />
             <CalculatorButton label="Feet" type={ButtonType.Primary} onClick={() => handleUnit('feet')} />
             <CalculatorButton label="Inch" type={ButtonType.Primary} onClick={() => handleUnit('inch')} />
@@ -346,7 +346,7 @@ export default function App() {
         onEngineeringDecimalPlacesChange={handleEngineeringDecimalPlacesChange}
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
-        version="v3.0"
+        version="v1.1.0"
       />
     </div>
   );

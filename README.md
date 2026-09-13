@@ -41,4 +41,4 @@ cd android
 
 ## Sürüm
 
-İlk temiz yayın: `v1.0.0`
+Güncel sürüm: `v1.1.0`
