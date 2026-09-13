@@ -8,6 +8,7 @@ interface UpdateModalProps {
     onCancel: () => void;
     isDownloading: boolean;
     progress: number;
+    error: string | null;
 }
 
 export const UpdateModal: React.FC<UpdateModalProps> = ({
@@ -18,6 +19,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
     onCancel,
     isDownloading,
     progress,
+    error,
 }) => {
     if (!isOpen) return null;
 
@@ -26,7 +28,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
             <div className="bg-surface dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-gray-700">
                 <div className="p-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        Yeni Güncelleme Mevcut! 🚀
+                        {version} Sürümünü İndir ve Güncelle 🌐
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                         Sürüm: <span className="font-mono font-medium text-primary">{version}</span>
@@ -55,6 +57,12 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                             </div>
                         </div>
                     ) : (
+                        <>
+                            {error && (
+                                <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+                                    {error}
+                                </div>
+                            )}
                         <div className="flex gap-3">
                             <button
                                 onClick={onCancel}
@@ -66,9 +74,10 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                                 onClick={onConfirm}
                                 className="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30"
                             >
-                                İndir ve Yükle
+                                {error ? 'Tekrar Dene' : 'İndir ve Güncelle 🌐'}
                             </button>
                         </div>
+                        </>
                     )}
                 </div>
             </div>

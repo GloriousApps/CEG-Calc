@@ -1,5 +1,4 @@
 import { App } from '@capacitor/app';
-import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
@@ -49,8 +48,9 @@ export const checkForUpdate = async (): Promise<GithubRelease | null> => {
 };
 
 /**
- * Downloads the APK from the release asset URL.
- * updates progress callback (0-100).
+ * Downloads the APK natively into the app cache.
+ * Keeping this work in the native Filesystem plugin avoids loading the APK
+ * into the browser/WebView memory, which can stall large GitHub downloads.
  * Returns the file path of the downloaded APK.
  */
 export const downloadUpdate = async (
@@ -64,66 +64,25 @@ export const downloadUpdate = async (
     const fileName = apkAsset.name;
     const path = `updates/${fileName}`;
 
-    console.log(`Starting download from: ${downloadUrl}`);
+    const progressListener = await Filesystem.addListener('progress', ({ bytes, contentLength }) => {
+        if (contentLength > 0) {
+            onProgress(Math.min((bytes / contentLength) * 100, 100));
+        }
+    });
 
     try {
-        // GitHub uses redirects for binary downloads, fetch follows by default
-        const response = await fetch(downloadUrl, {
-            method: 'GET',
-            redirect: 'follow',
-            headers: {
-                'Accept': 'application/octet-stream'
-            }
-        });
-
-        if (!response.ok) {
-            console.error(`Download HTTP Error: ${response.status} ${response.statusText}`);
-            throw new Error(`Download failed: HTTP ${response.status}`);
-        }
-
-        if (!response.body) throw new Error("Download failed: No body");
-
-        const contentLength = response.headers.get('Content-Length');
-        const total = contentLength ? parseInt(contentLength, 10) : 0;
-        console.log(`Download size: ${total} bytes`);
-
-        let loaded = 0;
-        const reader = response.body.getReader();
-        const chunks: BlobPart[] = [];
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            chunks.push(value);
-            loaded += value.length;
-
-            if (total > 0) {
-                onProgress(Math.min((loaded / total) * 100, 100)); // Cap at 100
-            }
-        }
-
-        console.log(`Download complete: ${loaded} bytes received`);
-
-        // Combine chunks
-        const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
-        const base64 = await blobToBase64(blob);
-
-        console.log(`Saving file to: ${path}`);
-
-        // Save to filesystem (Cache directory is best for temporary updates)
-        const savedFile = await Filesystem.writeFile({
-            path: path,
-            data: base64,
+        const downloadedFile = await Filesystem.downloadFile({
+            url: downloadUrl,
+            path,
             directory: Directory.Cache,
-            recursive: true
+            recursive: true,
+            progress: true,
         });
-
-        console.log(`File saved: ${savedFile.uri}`);
-        return savedFile.uri;
-    } catch (error) {
-        console.error("Download Error:", error);
-        throw error;
+        if (!downloadedFile.path) throw new Error('APK dosyası kaydedilemedi.');
+        onProgress(100);
+        return downloadedFile.path;
+    } finally {
+        await progressListener.remove();
     }
 };
 
@@ -137,19 +96,6 @@ export const installAPK = async (fileUri: string) => {
         console.error("File Open Error:", e);
         throw e;
     }
-};
-
-const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = () => {
-            // extract base64 data from "data:application/xxx;base64,....."
-            const result = reader.result as string;
-            resolve(result.split(',')[1]);
-        };
-        reader.readAsDataURL(blob);
-    });
 };
 
 function cleanVersion(ver: string): string {

@@ -38,6 +38,7 @@ export default function App() {
   const [updateRelease, setUpdateRelease] = useState<GithubRelease | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
 
   const runUpdateCheck = useCallback(async (): Promise<string | null> => {
     const release = await checkForUpdate();
@@ -56,18 +57,8 @@ export default function App() {
 
   const handleUpdateConfirm = async () => {
     if (!updateRelease) return;
-
-    // Find APK asset
-    const apkAsset = updateRelease.assets.find(a => a.name.endsWith('.apk'));
-
-    if (!apkAsset) {
-      // No APK found, open release page in browser
-      const { Browser } = await import('@capacitor/browser');
-      await Browser.open({ url: updateRelease.html_url });
-      setShowUpdateModal(false);
-      return;
-    }
-
+    setUpdateError(null);
+    setDownloadProgress(0);
     setIsDownloading(true);
     try {
       const filePath = await downloadUpdate(updateRelease, (progress) => {
@@ -76,18 +67,9 @@ export default function App() {
       setIsDownloading(false);
       await installAPK(filePath);
     } catch (error) {
-      console.error("In-app download failed, opening browser:", error);
+      console.error('In-app update failed:', error);
       setIsDownloading(false);
-
-      // Fallback: Open APK download link in system browser
-      try {
-        const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url: apkAsset.browser_download_url });
-        setShowUpdateModal(false);
-      } catch (browserError) {
-        console.error("Browser open also failed:", browserError);
-        alert("İndirme başarısız oldu. Lütfen GitHub'dan manuel olarak indirin.");
-      }
+      setUpdateError('Güncelleme indirilemedi veya kurulum başlatılamadı. Bağlantınızı kontrol edip tekrar deneyin.');
     }
   };
 
@@ -338,6 +320,7 @@ export default function App() {
         onCancel={handleUpdateCancel}
         isDownloading={isDownloading}
         progress={downloadProgress}
+        error={updateError}
       />
       <SettingsModal
         isOpen={showSettings}
@@ -353,7 +336,7 @@ export default function App() {
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
-        version="v1.5.0"
+        version="v1.6.0"
       />
     </div>
   );
