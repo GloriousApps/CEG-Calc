@@ -15,7 +15,7 @@ export interface GithubRelease {
     body: string; // Release notes
 }
 
-const GITHUB_REPO = "GloriousTR/CEG-Calc";
+const GITHUB_REPO = "GloriousApps/CEG-Calc";
 
 /**
  * Checks for updates and returns release info if a newer version exists.
