@@ -39,14 +39,14 @@ export default function App() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const runUpdateCheck = useCallback(async () => {
+  const runUpdateCheck = useCallback(async (): Promise<string | null> => {
     const release = await checkForUpdate();
     if (release) {
       setUpdateRelease(release);
       setShowUpdateModal(true);
-      return true;
+      return release.tag_name;
     }
-    return false;
+    return null;
   }, []);
 
   // Check for updates on mount
@@ -353,7 +353,7 @@ export default function App() {
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
-        version="v1.4.0"
+        version="v1.5.0"
       />
     </div>
   );

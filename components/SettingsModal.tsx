@@ -14,7 +14,7 @@ interface SettingsModalProps {
     onEngineeringDecimalPlacesChange: (places: number) => void;
     orientation: 'auto' | 'portrait' | 'landscape';
     onOrientationChange: (orientation: 'auto' | 'portrait' | 'landscape') => void;
-    onCheckForUpdates: () => Promise<boolean>;
+    onCheckForUpdates: () => Promise<string | null>;
     version: string;
 }
 
@@ -40,12 +40,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const [showThanks, setShowThanks] = useState(false);
     const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
     const [updateMessage, setUpdateMessage] = useState('');
+    const [availableVersion, setAvailableVersion] = useState('');
 
     useEffect(() => {
         if (!isOpen) {
             setActiveSection(null);
             setShowThanks(false);
             setUpdateMessage('');
+            setAvailableVersion('');
         }
     }, [isOpen]);
 
@@ -104,7 +106,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {activeSection === 'thanks' && <div className="space-y-4"><button type="button" onClick={() => setShowThanks(!showThanks)} className="min-h-[60px] w-full rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 font-bold text-white shadow-lg transition-transform active:scale-[.98]"><span className="mr-2 text-xl">🙏</span>{showThanks ? 'Teşekkürleri gizle' : 'Teşekkürleri göster'}</button>{showThanks && <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 dark:border-amber-800 dark:from-amber-900/20 dark:to-orange-900/20"><p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300"><strong className="text-amber-600 dark:text-amber-400">CEG Türkiye</strong> ofisine teşekkürler.</p><p className="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">Özellikle test aşamasındaki desteği için <strong className="text-orange-600 dark:text-orange-400">Hasan Hüseyin URAL</strong>'a teşekkürler! 🎉</p></div>}</div>}
 
-                    {activeSection === 'updates' && <div className="space-y-4"><p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">Yeni uygulama sürümü olup olmadığını şimdi kontrol edin.</p><button type="button" disabled={isCheckingUpdates} onClick={async () => { setIsCheckingUpdates(true); setUpdateMessage('Kontrol ediliyor…'); try { const found = await onCheckForUpdates(); setUpdateMessage(found ? 'Yeni sürüm bulundu.' : 'Uygulamanız güncel.'); } catch { setUpdateMessage('Güncelleme kontrolü başarısız oldu.'); } finally { setIsCheckingUpdates(false); } }} className="min-h-[60px] w-full rounded-2xl bg-[#0b3aa5] px-4 font-bold text-white shadow-lg transition-colors hover:bg-[#1748bd] disabled:cursor-wait disabled:opacity-70"><span className="mr-2 text-xl">↻</span>{isCheckingUpdates ? 'Kontrol ediliyor…' : 'Güncellemeleri denetle'}</button>{updateMessage && <div className="rounded-2xl border border-[#c7d4e0] bg-gray-100 p-4 text-center text-sm font-medium text-gray-700 dark:border-gray-700 dark:bg-[#1C2024] dark:text-gray-200">{updateMessage}</div>}</div>}
+                    {activeSection === 'updates' && <div className="space-y-4"><p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">Yeni uygulama sürümü olup olmadığını şimdi kontrol edin.</p><button type="button" disabled={isCheckingUpdates} onClick={async () => { setIsCheckingUpdates(true); setUpdateMessage('Kontrol ediliyor…'); try { const found = await onCheckForUpdates(); setAvailableVersion(found || ''); setUpdateMessage(found ? `${found} Sürümünü İndir ve Güncelle 🌐` : 'Uygulamanız Güncel ✅'); } catch { setAvailableVersion(''); setUpdateMessage('Güncelleme kontrolü başarısız oldu.'); } finally { setIsCheckingUpdates(false); } }} className="min-h-[60px] w-full rounded-2xl bg-[#0b3aa5] px-4 font-bold text-white shadow-lg transition-colors hover:bg-[#1748bd] disabled:cursor-wait disabled:opacity-70"><span className="mr-2 text-xl">↻</span>{isCheckingUpdates ? 'Kontrol ediliyor…' : 'Güncellemeleri denetle'}</button>{updateMessage && <div className={`rounded-2xl border p-4 text-center text-sm font-semibold ${availableVersion ? 'border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200' : 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'}`}>{updateMessage}</div>}</div>}
                 </div>
             </div>
         );
