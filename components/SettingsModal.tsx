@@ -39,9 +39,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <button
             type="button"
             onClick={() => setOpenSection(openSection === id ? '' : id)}
-            className={`w-full flex items-center justify-between text-left rounded-xl border px-4 py-3 transition-colors ${openSection === id
-                ? 'border-amber-500/70 bg-gray-100 dark:bg-[#20262c]'
-                : 'border-gray-200 bg-gray-100 hover:border-gray-300 dark:border-gray-700 dark:bg-[#1C2024] dark:hover:border-gray-600'
+            className={`w-full min-h-[60px] flex items-center justify-between text-left rounded-2xl border px-5 py-4 shadow-sm transition-all ${openSection === id
+                ? 'border-amber-500/70 bg-gray-100 shadow-md dark:bg-[#20262c]'
+                : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-[#1C2024] dark:hover:border-gray-600'
                 }`}
             aria-expanded={openSection === id}
         >
@@ -55,12 +55,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (!isOpen) return null;
 
     const handleGitHub = async () => {
-        await Browser.open({ url: 'https://github.com/GloriousTR/CEG-Calc' });
+        await Browser.open({ url: 'https://github.com/GloriousApps/CEG-Calc' });
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#2C3035] rounded-3xl shadow-2xl w-full max-w-sm max-h-[90dvh] overflow-y-auto border border-gray-100 dark:border-gray-700">
+            <div className="flex h-[min(760px,90dvh)] max-h-[90dvh] w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-gray-700 dark:bg-[#2C3035]">
 
                 {/* Header */}
                 <div className="sticky top-0 z-10 px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-[#25282C]">
@@ -77,12 +77,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-6">
 
                     {/* Theme Section */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {sectionHeader('theme', 'Tema')}
-                        {openSection === 'theme' && <div className="flex items-center justify-between bg-gray-100 dark:bg-[#1C2024] p-4 rounded-xl">
+                        {openSection === 'theme' && <div className="flex min-h-[76px] items-center justify-between rounded-2xl bg-gray-100 p-5 shadow-inner dark:bg-[#1C2024]">
                             <span className="text-gray-900 dark:text-gray-200 font-medium flex items-center gap-3">
                                 {darkMode ? (
                                     <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
@@ -101,7 +101,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
 
                     {/* Fraction display precision */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <div>
                             {sectionHeader('fraction', 'Kesir Hassasiyeti')}
                             {openSection === 'fraction' && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ölçü sonuçlarını seçilen en yakın kesre yuvarlar.</p>}
@@ -114,7 +114,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                         key={denominator}
                                         type="button"
                                         onClick={() => onFractionDenominatorChange(denominator)}
-                                        className={`rounded-xl border px-3 py-2.5 font-mono text-sm font-bold transition-colors ${selected
+                                        className={`min-h-[52px] rounded-2xl border px-3 py-3.5 font-mono text-sm font-bold shadow-sm transition-all ${selected
                                             ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
                                             : 'border-gray-200 bg-gray-100 text-gray-700 hover:border-amber-300 dark:border-gray-700 dark:bg-[#1C2024] dark:text-gray-200'
                                             }`}
@@ -134,27 +134,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             {openSection === 'decimal' && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Normal ve mühendislik sonuçlarında noktadan sonra gösterilecek hane sayısı.</p>}
                         </div>
                         {openSection === 'decimal' && <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="min-h-[92px] space-y-3 rounded-2xl bg-gray-100 p-3.5 shadow-inner dark:bg-[#1C2024]">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Normal hesap</span>
                                 <div className="grid grid-cols-6 gap-1.5">
-                                    {[1, 2, 3, 4, 5, 6].map((places) => <button key={places} type="button" onClick={() => onNormalDecimalPlacesChange(places)} className={`h-8 w-8 rounded-lg text-xs font-bold ${normalDecimalPlaces === places ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-[#1C2024] dark:text-gray-200'}`}>{places}</button>)}
+                                    {[1, 2, 3, 4, 5, 6].map((places) => <button key={places} type="button" onClick={() => onNormalDecimalPlacesChange(places)} className={`h-9 w-9 rounded-xl text-xs font-bold shadow-sm transition-colors ${normalDecimalPlaces === places ? 'bg-amber-500 text-white' : 'bg-white text-gray-700 dark:bg-[#252c34] dark:text-gray-200'}`}>{places}</button>)}
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="min-h-[92px] space-y-3 rounded-2xl bg-gray-100 p-3.5 shadow-inner dark:bg-[#1C2024]">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Mühendislik</span>
                                 <div className="grid grid-cols-6 gap-1.5">
-                                    {[1, 2, 3, 4, 5, 6].map((places) => <button key={places} type="button" onClick={() => onEngineeringDecimalPlacesChange(places)} className={`h-8 w-8 rounded-lg text-xs font-bold ${engineeringDecimalPlaces === places ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-[#1C2024] dark:text-gray-200'}`}>{places}</button>)}
+                                    {[1, 2, 3, 4, 5, 6].map((places) => <button key={places} type="button" onClick={() => onEngineeringDecimalPlacesChange(places)} className={`h-9 w-9 rounded-xl text-xs font-bold shadow-sm transition-colors ${engineeringDecimalPlaces === places ? 'bg-amber-500 text-white' : 'bg-white text-gray-700 dark:bg-[#252c34] dark:text-gray-200'}`}>{places}</button>)}
                                 </div>
                             </div>
                         </div>}
                     </div>
 
                     {/* Layout */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {sectionHeader('layout', 'Görünüm')}
                         {openSection === 'layout' && <div className="grid grid-cols-3 gap-2">
                             {([['auto', 'Otomatik'], ['portrait', 'Dikey'], ['landscape', 'Yatay']] as const).map(([value, label]) => (
-                                <button key={value} type="button" onClick={() => onOrientationChange(value)} className={`rounded-xl border px-2 py-2.5 text-xs font-bold ${orientation === value ? 'border-amber-500 bg-amber-500 text-white' : 'border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-[#1C2024] dark:text-gray-200'}`}>{label}</button>
+                                <button key={value} type="button" onClick={() => onOrientationChange(value)} className={`min-h-[52px] rounded-2xl border px-2 py-3.5 text-xs font-bold shadow-sm transition-all ${orientation === value ? 'border-amber-500 bg-amber-500 text-white' : 'border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-[#1C2024] dark:text-gray-200'}`}>{label}</button>
                             ))}
                         </div>}
                     </div>
@@ -162,7 +162,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* About Section */}
                     <div className="space-y-3">
                         {sectionHeader('about', 'Hakkında')}
-                        {openSection === 'about' && <div className="bg-gray-100 dark:bg-[#1C2024] p-4 rounded-xl space-y-3">
+                        {openSection === 'about' && <div className="space-y-3 rounded-2xl bg-gray-100 p-5 shadow-inner dark:bg-[#1C2024]">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-600 dark:text-gray-400">Sürüm</span>
                                 <span className="font-mono font-medium text-primary">{version}</span>
@@ -173,7 +173,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             >
                                 <span className="text-gray-600 dark:text-gray-400">GitHub</span>
                                 <span className="font-medium text-blue-500 flex items-center gap-1">
-                                    GloriousTR/CEG-Calc
+                                    GloriousApps/CEG-Calc
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                 </span>
                             </button>

@@ -240,7 +240,7 @@ export default function App() {
   return (
     <div className="min-h-[100dvh] w-full bg-[#0d141a] font-display text-white flex items-center justify-center p-3 sm:p-6 select-none">
       <div className={`w-full bg-[#171e24] rounded-[30px] shadow-2xl overflow-hidden flex ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'}`}>
-        <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.5] pb-0'} min-h-0 px-6 pt-5 flex flex-col`}>
+        <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col`}>
           <div className="relative h-12 mb-3 shrink-0">
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div onDoubleClick={() => setShowTape(true)} className="h-12 w-64 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner" title="Tape için iki kez dokunun">
@@ -260,9 +260,9 @@ export default function App() {
           </div>
         </section>
 
-        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#1b3446] px-3 py-4 justify-center' : 'flex-[5.5] border-t border-[#1b3446] px-3 pb-4 pt-2'} min-h-0 bg-[#151b20] flex flex-col`}>
+        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#1b3446] px-3 py-4 justify-center' : 'flex-[5.2] border-t border-[#1b3446] px-3 pb-4 pt-0'} min-h-0 bg-[#151b20] flex flex-col`}>
           <div
-            className={`grid grid-cols-5 grid-rows-5 gap-2 min-h-0 ${isLandscape ? 'aspect-square h-auto self-center' : 'w-full h-[92%] mt-auto'}`}
+            className={`grid grid-cols-5 grid-rows-5 gap-2 min-h-0 ${isLandscape ? 'aspect-square h-auto self-center' : 'w-full h-[96%] mt-auto'}`}
             style={isLandscape ? { width: 'min(100%, calc(100dvh - 80px))' } : undefined}
           >
             <CalculatorButton label="Yds" type={ButtonType.Primary} onClick={() => handleUnit('yard')} />
@@ -349,7 +349,7 @@ export default function App() {
         onEngineeringDecimalPlacesChange={handleEngineeringDecimalPlacesChange}
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
-        version="v1.2.0"
+        version="v1.3.0"
       />
     </div>
   );

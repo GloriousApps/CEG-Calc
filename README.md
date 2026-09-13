@@ -41,4 +41,4 @@ cd android
 
 ## Sürüm
 
-Güncel sürüm: `v1.2.0`
+Güncel sürüm: `v1.3.0`
