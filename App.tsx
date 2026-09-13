@@ -262,7 +262,7 @@ export default function App() {
 
         <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#1b3446] px-3 py-4 justify-center' : 'flex-[5.5] border-t border-[#1b3446] px-3 pb-4 pt-2'} min-h-0 bg-[#151b20] flex flex-col`}>
           <div
-            className={`grid grid-cols-5 grid-rows-5 gap-2 min-h-0 ${isLandscape ? 'aspect-square h-auto self-center' : 'w-full h-[88%]'}`}
+            className={`grid grid-cols-5 grid-rows-5 gap-2 min-h-0 ${isLandscape ? 'aspect-square h-auto self-center' : 'w-full h-[92%] mt-auto'}`}
             style={isLandscape ? { width: 'min(100%, calc(100dvh - 80px))' } : undefined}
           >
             <CalculatorButton label="Yds" type={ButtonType.Primary} onClick={() => handleUnit('yard')} />
@@ -349,7 +349,7 @@ export default function App() {
         onEngineeringDecimalPlacesChange={handleEngineeringDecimalPlacesChange}
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
-        version="v1.1.1"
+        version="v1.2.0"
       />
     </div>
   );
