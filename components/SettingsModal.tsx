@@ -14,10 +14,11 @@ interface SettingsModalProps {
     onEngineeringDecimalPlacesChange: (places: number) => void;
     orientation: 'auto' | 'portrait' | 'landscape';
     onOrientationChange: (orientation: 'auto' | 'portrait' | 'landscape') => void;
+    onCheckForUpdates: () => Promise<boolean>;
     version: string;
 }
 
-type SectionId = 'theme' | 'fraction' | 'decimal' | 'layout' | 'about' | 'thanks';
+type SectionId = 'theme' | 'fraction' | 'decimal' | 'layout' | 'about' | 'thanks' | 'updates';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
     isOpen,
@@ -32,15 +33,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onEngineeringDecimalPlacesChange,
     orientation,
     onOrientationChange,
+    onCheckForUpdates,
     version
 }) => {
     const [activeSection, setActiveSection] = useState<SectionId | null>(null);
     const [showThanks, setShowThanks] = useState(false);
+    const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
+    const [updateMessage, setUpdateMessage] = useState('');
 
     useEffect(() => {
         if (!isOpen) {
             setActiveSection(null);
             setShowThanks(false);
+            setUpdateMessage('');
         }
     }, [isOpen]);
 
@@ -56,7 +61,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         { id: 'decimal', title: 'Ondalık Hane', description: `Normal ${normalDecimalPlaces} · Mühendislik ${engineeringDecimalPlaces}`, icon: '0.0' },
         { id: 'layout', title: 'Görünüm', description: orientation === 'auto' ? 'Otomatik yönlendirme' : orientation === 'portrait' ? 'Dikey görünüm' : 'Yatay görünüm', icon: '▣' },
         { id: 'about', title: 'Hakkında', description: `Sürüm ${version}`, icon: 'i' },
-        { id: 'thanks', title: 'Teşekkürler', description: 'Projeye katkı sağlayanlar', icon: '♥' }
+        { id: 'thanks', title: 'Teşekkürler', description: 'Projeye katkı sağlayanlar', icon: '♥' },
+        { id: 'updates', title: 'Güncellemeler', description: 'Yeni sürüm denetimi', icon: '↻' }
     ];
 
     const sectionCard = (section: typeof sectionMeta[number]) => (
@@ -97,6 +103,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {activeSection === 'about' && <div className="space-y-3 rounded-2xl bg-gray-100 p-5 shadow-inner dark:bg-[#1C2024]"><div className="flex min-h-[48px] items-center justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Sürüm</span><span className="font-mono font-semibold text-primary">{version}</span></div><button type="button" onClick={handleGitHub} className="flex min-h-[56px] w-full items-center justify-between border-t border-gray-200 pt-3 text-sm dark:border-gray-700"><span className="text-gray-600 dark:text-gray-400">GitHub</span><span className="flex items-center gap-1 font-medium text-blue-500">GloriousApps/CEG-Calc<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10v-4M14 4h6m0 0v6m0-6L10 14" /></svg></span></button></div>}
 
                     {activeSection === 'thanks' && <div className="space-y-4"><button type="button" onClick={() => setShowThanks(!showThanks)} className="min-h-[60px] w-full rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 font-bold text-white shadow-lg transition-transform active:scale-[.98]"><span className="mr-2 text-xl">🙏</span>{showThanks ? 'Teşekkürleri gizle' : 'Teşekkürleri göster'}</button>{showThanks && <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 dark:border-amber-800 dark:from-amber-900/20 dark:to-orange-900/20"><p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300"><strong className="text-amber-600 dark:text-amber-400">CEG Türkiye</strong> ofisine teşekkürler.</p><p className="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">Özellikle test aşamasındaki desteği için <strong className="text-orange-600 dark:text-orange-400">Hasan Hüseyin URAL</strong>'a teşekkürler! 🎉</p></div>}</div>}
+
+                    {activeSection === 'updates' && <div className="space-y-4"><p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">Yeni uygulama sürümü olup olmadığını şimdi kontrol edin.</p><button type="button" disabled={isCheckingUpdates} onClick={async () => { setIsCheckingUpdates(true); setUpdateMessage('Kontrol ediliyor…'); try { const found = await onCheckForUpdates(); setUpdateMessage(found ? 'Yeni sürüm bulundu.' : 'Uygulamanız güncel.'); } catch { setUpdateMessage('Güncelleme kontrolü başarısız oldu.'); } finally { setIsCheckingUpdates(false); } }} className="min-h-[60px] w-full rounded-2xl bg-[#0b3aa5] px-4 font-bold text-white shadow-lg transition-colors hover:bg-[#1748bd] disabled:cursor-wait disabled:opacity-70"><span className="mr-2 text-xl">↻</span>{isCheckingUpdates ? 'Kontrol ediliyor…' : 'Güncellemeleri denetle'}</button>{updateMessage && <div className="rounded-2xl border border-[#c7d4e0] bg-gray-100 p-4 text-center text-sm font-medium text-gray-700 dark:border-gray-700 dark:bg-[#1C2024] dark:text-gray-200">{updateMessage}</div>}</div>}
                 </div>
             </div>
         );

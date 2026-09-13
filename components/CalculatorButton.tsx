@@ -29,7 +29,7 @@ const CalculatorButton: React.FC<CalculatorButtonProps> = ({
     onClick();
   };
 
-  const baseClasses = "h-full w-full rounded-2xl font-bold shadow-[0_3px_0_rgba(0,0,0,0.24)] active:translate-y-px active:shadow-none transition-all flex items-center justify-center select-none";
+  const baseClasses = "h-full w-full rounded-2xl font-bold shadow-[0_3px_0_rgba(0,0,0,0.18)] active:translate-y-px active:shadow-none transition-all flex items-center justify-center select-none";
 
   let typeClasses = "";
   let textClasses = "text-xl";
@@ -48,7 +48,7 @@ const CalculatorButton: React.FC<CalculatorButtonProps> = ({
       textClasses = "text-2xl";
       break;
     case ButtonType.Neutral:
-      typeClasses = "bg-[#2b333d] hover:bg-[#353f4b] text-white";
+      typeClasses = "bg-[#dbe3ea] hover:bg-[#cfd9e2] text-[#18232e] dark:bg-[#2b333d] dark:hover:bg-[#353f4b] dark:text-white";
       textClasses = "text-xl font-mono";
       break;
     case ButtonType.Memory:

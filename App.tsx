@@ -39,17 +39,20 @@ export default function App() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const runUpdateCheck = useCallback(async () => {
+    const release = await checkForUpdate();
+    if (release) {
+      setUpdateRelease(release);
+      setShowUpdateModal(true);
+      return true;
+    }
+    return false;
+  }, []);
+
   // Check for updates on mount
   useEffect(() => {
-    const check = async () => {
-      const release = await checkForUpdate();
-      if (release) {
-        setUpdateRelease(release);
-        setShowUpdateModal(true);
-      }
-    };
-    check();
-  }, []);
+    runUpdateCheck();
+  }, [runUpdateCheck]);
 
   const handleUpdateConfirm = async () => {
     if (!updateRelease) return;
@@ -238,8 +241,8 @@ export default function App() {
     );
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#0d141a] font-display text-white flex items-center justify-center p-3 sm:p-6 select-none">
-      <div className={`w-full bg-[#171e24] rounded-[30px] shadow-2xl overflow-hidden flex ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'}`}>
+    <div className="flex min-h-[100dvh] w-full select-none items-center justify-center bg-[#e7edf2] p-3 font-display text-[#101820] sm:p-6 dark:bg-[#0d141a] dark:text-white">
+      <div className={`w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
         <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col`}>
           <div className="relative h-12 mb-3 shrink-0">
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -250,7 +253,7 @@ export default function App() {
             <button
               onClick={() => setShowSettings(true)}
               aria-label="Ayarları aç"
-              className="absolute right-0 top-0 h-11 w-11 rounded-lg border border-[#2a3b4e] bg-[#252d36] text-2xl leading-none text-[#c0cad7] active:translate-y-px"
+              className="absolute right-0 top-0 h-11 w-11 rounded-lg border border-[#c7d4e0] bg-[#e7edf2] text-2xl leading-none text-[#526274] active:translate-y-px dark:border-[#2a3b4e] dark:bg-[#252d36] dark:text-[#c0cad7]"
             >
               ⚙
             </button>
@@ -260,7 +263,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#1b3446] px-3 py-4 justify-center' : 'flex-[5.2] border-t border-[#1b3446] px-3 pb-4 pt-0'} min-h-0 bg-[#151b20] flex flex-col`}>
+        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#c7d4e0] px-3 py-4 justify-center dark:border-[#1b3446]' : 'flex-[5.2] border-t border-[#c7d4e0] px-3 pb-4 pt-0 dark:border-[#1b3446]'} min-h-0 bg-[#f1f5f8] flex flex-col dark:bg-[#151b20]`}>
           <div
             className={`grid grid-cols-5 grid-rows-5 gap-2 min-h-0 ${isLandscape ? 'aspect-square h-auto self-center' : 'w-full h-[96%] mt-auto'}`}
             style={isLandscape ? { width: 'min(100%, calc(100dvh - 80px))' } : undefined}
@@ -299,25 +302,25 @@ export default function App() {
       </div>
       {showTape && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowTape(false)}>
-          <div className="w-full max-w-sm max-h-[75dvh] overflow-hidden rounded-2xl border border-[#2b3d50] bg-[#202830] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-[#334454] px-5 py-4">
-              <h2 className="text-lg font-bold text-white">Tape / Geçmiş</h2>
+          <div className="w-full max-w-sm max-h-[75dvh] overflow-hidden rounded-2xl border border-[#c7d4e0] bg-white shadow-2xl dark:border-[#2b3d50] dark:bg-[#202830]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[#cbd8e3] px-5 py-4 dark:border-[#334454]">
+              <h2 className="text-lg font-bold text-[#17212b] dark:text-white">Tape / Geçmiş</h2>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => dispatch({ type: CalculatorActionType.TAPE_CLEAR })} className="rounded-lg bg-[#394554] px-2.5 py-1.5 text-xs font-bold text-[#d8e0e8]">Temizle</button>
-                <button type="button" onClick={() => setShowTape(false)} className="rounded-full bg-[#34465d] px-3 py-1 text-lg text-white">×</button>
+                <button type="button" onClick={() => dispatch({ type: CalculatorActionType.TAPE_CLEAR })} className="rounded-lg bg-[#e1e8ee] px-2.5 py-1.5 text-xs font-bold text-[#3a4a58] dark:bg-[#394554] dark:text-[#d8e0e8]">Temizle</button>
+                <button type="button" onClick={() => setShowTape(false)} className="rounded-full bg-[#d8e2eb] px-3 py-1 text-lg text-[#3a4a58] dark:bg-[#34465d] dark:text-white">×</button>
               </div>
             </div>
             <div className="max-h-[60dvh] overflow-y-auto p-3">
               {state.tape.length === 0 ? (
-                <p className="px-2 py-8 text-center text-sm text-[#94a2b0]">Henüz kayıt yok. Bir işlem tamamlayın.</p>
+                <p className="px-2 py-8 text-center text-sm text-[#687887] dark:text-[#94a2b0]">Henüz kayıt yok. Bir işlem tamamlayın.</p>
               ) : (
                 <div className="space-y-2">
                   {[...state.tape].reverse().map((entry, reverseIndex) => {
                     const index = state.tape.length - 1 - reverseIndex;
                     return (
-                      <button key={`${entry.expression}-${index}`} type="button" onClick={() => { dispatch({ type: CalculatorActionType.TAPE_RECALL, payload: index }); setShowTape(false); }} className="w-full rounded-xl bg-[#171e24] px-4 py-3 text-left transition-colors hover:bg-[#26333f]">
-                        <div className="font-mono text-xs text-[#9aa8b6]">{entry.expression}</div>
-                        <div className="mt-1 flex items-center justify-between"><span className="font-mono text-lg text-white">{Number(entry.result.toFixed(6))}</span><span className="text-[10px] font-bold tracking-wider text-[#19ad9b]">{entry.dimension === 3 ? 'CB' : entry.dimension === 2 ? 'SQ' : ''}</span></div>
+                      <button key={`${entry.expression}-${index}`} type="button" onClick={() => { dispatch({ type: CalculatorActionType.TAPE_RECALL, payload: index }); setShowTape(false); }} className="w-full rounded-xl bg-[#eef3f7] px-4 py-3 text-left transition-colors hover:bg-[#e1e8ee] dark:bg-[#171e24] dark:hover:bg-[#26333f]">
+                        <div className="font-mono text-xs text-[#647482] dark:text-[#9aa8b6]">{entry.expression}</div>
+                        <div className="mt-1 flex items-center justify-between"><span className="font-mono text-lg text-[#17212b] dark:text-white">{Number(entry.result.toFixed(6))}</span><span className="text-[10px] font-bold tracking-wider text-[#19ad9b]">{entry.dimension === 3 ? 'CB' : entry.dimension === 2 ? 'SQ' : ''}</span></div>
                       </button>
                     );
                   })}
@@ -349,6 +352,7 @@ export default function App() {
         onEngineeringDecimalPlacesChange={handleEngineeringDecimalPlacesChange}
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
+        onCheckForUpdates={runUpdateCheck}
         version="v1.4.0"
       />
     </div>
