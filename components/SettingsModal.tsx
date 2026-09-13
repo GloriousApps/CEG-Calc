@@ -33,6 +33,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     version
 }) => {
     const [showThanks, setShowThanks] = useState(false);
+    const [openSection, setOpenSection] = useState<string>('theme');
+
+    const sectionHeader = (id: string, title: string) => (
+        <button
+            type="button"
+            onClick={() => setOpenSection(openSection === id ? '' : id)}
+            className="w-full flex items-center justify-between text-left py-1"
+            aria-expanded={openSection === id}
+        >
+            <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</span>
+            <span className="text-lg leading-none text-gray-400" aria-hidden="true">{openSection === id ? '−' : '+'}</span>
+        </button>
+    );
 
     if (!isOpen) return null;
 
@@ -63,8 +76,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {/* Theme Section */}
                     <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Tema</h3>
-                        <div className="flex items-center justify-between bg-gray-100 dark:bg-[#1C2024] p-4 rounded-xl">
+                        {sectionHeader('theme', 'Tema')}
+                        {openSection === 'theme' && <div className="flex items-center justify-between bg-gray-100 dark:bg-[#1C2024] p-4 rounded-xl">
                             <span className="text-gray-900 dark:text-gray-200 font-medium flex items-center gap-3">
                                 {darkMode ? (
                                     <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
@@ -79,16 +92,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             >
                                 <div className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${darkMode ? 'translate-x-6' : 'translate-x-0'}`} />
                             </button>
-                        </div>
+                        </div>}
                     </div>
 
                     {/* Fraction display precision */}
                     <div className="space-y-3">
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Kesir Hassasiyeti</h3>
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ölçü sonuçlarını seçilen en yakın kesre yuvarlar.</p>
+                            {sectionHeader('fraction', 'Kesir Hassasiyeti')}
+                            {openSection === 'fraction' && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ölçü sonuçlarını seçilen en yakın kesre yuvarlar.</p>}
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
+                        {openSection === 'fraction' && <div className="grid grid-cols-3 gap-2">
                             {[2, 4, 8, 16, 32, 64].map((denominator) => {
                                 const selected = fractionDenominator === denominator;
                                 return (
@@ -106,16 +119,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     </button>
                                 );
                             })}
-                        </div>
+                        </div>}
                     </div>
 
                     {/* Decimal display precision */}
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ondalık Hane</h3>
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Normal ve mühendislik sonuçlarında noktadan sonra gösterilecek hane sayısı.</p>
+                            {sectionHeader('decimal', 'Ondalık Hane')}
+                            {openSection === 'decimal' && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Normal ve mühendislik sonuçlarında noktadan sonra gösterilecek hane sayısı.</p>}
                         </div>
-                        <div className="space-y-2">
+                        {openSection === 'decimal' && <div className="space-y-2">
                             <div className="flex items-center justify-between gap-3">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Normal hesap</span>
                                 <div className="grid grid-cols-6 gap-1.5">
@@ -128,23 +141,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     {[1, 2, 3, 4, 5, 6].map((places) => <button key={places} type="button" onClick={() => onEngineeringDecimalPlacesChange(places)} className={`h-8 w-8 rounded-lg text-xs font-bold ${engineeringDecimalPlaces === places ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-[#1C2024] dark:text-gray-200'}`}>{places}</button>)}
                                 </div>
                             </div>
-                        </div>
+                        </div>}
                     </div>
 
                     {/* Layout */}
                     <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Görünüm</h3>
-                        <div className="grid grid-cols-3 gap-2">
+                        {sectionHeader('layout', 'Görünüm')}
+                        {openSection === 'layout' && <div className="grid grid-cols-3 gap-2">
                             {([['auto', 'Otomatik'], ['portrait', 'Dikey'], ['landscape', 'Yatay']] as const).map(([value, label]) => (
                                 <button key={value} type="button" onClick={() => onOrientationChange(value)} className={`rounded-xl border px-2 py-2.5 text-xs font-bold ${orientation === value ? 'border-amber-500 bg-amber-500 text-white' : 'border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-[#1C2024] dark:text-gray-200'}`}>{label}</button>
                             ))}
-                        </div>
+                        </div>}
                     </div>
 
                     {/* About Section */}
                     <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Hakkında</h3>
-                        <div className="bg-gray-100 dark:bg-[#1C2024] p-4 rounded-xl space-y-3">
+                        {sectionHeader('about', 'Hakkında')}
+                        {openSection === 'about' && <div className="bg-gray-100 dark:bg-[#1C2024] p-4 rounded-xl space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-600 dark:text-gray-400">Sürüm</span>
                                 <span className="font-mono font-medium text-primary">{version}</span>
@@ -159,7 +172,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                 </span>
                             </button>
-                        </div>
+                        </div>}
                     </div>
 
                     {/* Thanks Section */}

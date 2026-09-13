@@ -41,4 +41,4 @@ cd android
 
 ## Sürüm
 
-Güncel sürüm: `v1.1.0`
+Güncel sürüm: `v1.1.1`
