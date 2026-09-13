@@ -39,11 +39,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <button
             type="button"
             onClick={() => setOpenSection(openSection === id ? '' : id)}
-            className="w-full flex items-center justify-between text-left py-1"
+            className={`w-full flex items-center justify-between text-left rounded-xl border px-4 py-3 transition-colors ${openSection === id
+                ? 'border-amber-500/70 bg-gray-100 dark:bg-[#20262c]'
+                : 'border-gray-200 bg-gray-100 hover:border-gray-300 dark:border-gray-700 dark:bg-[#1C2024] dark:hover:border-gray-600'
+                }`}
             aria-expanded={openSection === id}
         >
-            <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</span>
-            <span className="text-lg leading-none text-gray-400" aria-hidden="true">{openSection === id ? '−' : '+'}</span>
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">{title}</span>
+            <svg className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${openSection === id ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+            </svg>
         </button>
     );
 
