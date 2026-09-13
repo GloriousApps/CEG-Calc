@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>TR Türkçe</strong> · GB English
+  <a href="README.md">🇹🇷 Türkçe</a> · <a href="README.en.md">🇺🇸 English</a>
 </p>
 
 <p align="center">
@@ -20,7 +20,6 @@
 
 <p align="center">
   <a href="https://github.com/GloriousApps/CEG-Calc/releases">APK indir</a> ·
-  <a href="https://github.com/GloriousApps/CEG-Calc/releases">Sürüm notları</a> ·
   <a href="https://ceg-calc.vercel.app">Web uygulamasını aç</a> ·
   <a href="https://github.com/GloriousApps/CEG-Calc/issues">Sorun bildir</a>
 </p>
