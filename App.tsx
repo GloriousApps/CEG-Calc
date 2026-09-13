@@ -349,7 +349,7 @@ export default function App() {
         onEngineeringDecimalPlacesChange={handleEngineeringDecimalPlacesChange}
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
-        version="v1.3.0"
+        version="v1.4.0"
       />
     </div>
   );
