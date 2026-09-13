@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Browser } from '@capacitor/browser';
 
 interface SettingsModalProps {
@@ -36,6 +36,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
     const [activeSection, setActiveSection] = useState<SectionId | null>(null);
     const [showThanks, setShowThanks] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setActiveSection(null);
+            setShowThanks(false);
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
