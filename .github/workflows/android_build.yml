@@ -3,10 +3,18 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without the v prefix'
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
     steps:
       # Fetch depth 0 is critical for calculating tags
       - uses: actions/checkout@v4
@@ -16,7 +24,14 @@ jobs:
       - name: Calculate Version
         id: version
         shell: bash
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
+          if [[ -n "$REQUESTED_VERSION" ]]; then
+            echo "Using requested version: $REQUESTED_VERSION"
+            echo "VERSION=$REQUESTED_VERSION" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           # Check if this is a tag push
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             # Use the tag version directly (remove 'refs/tags/v' prefix)
@@ -220,7 +235,7 @@ jobs:
       - name: Attach Portable app to release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: v${{ needs.build.outputs.version }}
           files: release/windows/CEG_Calc_Portable_v1.0.0.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -232,8 +247,8 @@ jobs:
       - name: Publish complete release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "CEG Calc ${{ github.ref_name }}"
+          tag_name: v${{ needs.build.outputs.version }}
+          name: "CEG Calc v${{ needs.build.outputs.version }}"
           draft: false
           prerelease: false
         env:
