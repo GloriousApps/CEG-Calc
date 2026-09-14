@@ -42,14 +42,20 @@ export default function App() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
 
-  const runUpdateCheck = useCallback(async (): Promise<string | null> => {
+  const runUpdateCheck = useCallback(async (): Promise<GithubRelease | null> => {
     const release = await checkForUpdate();
     if (release) {
       setUpdateRelease(release);
       setShowUpdateModal(true);
-      return release.tag_name;
+      return release;
     }
     return null;
+  }, []);
+
+  const startSettingsUpdate = useCallback((release: GithubRelease) => {
+    setUpdateRelease(release);
+    setShowSettings(false);
+    setShowUpdateModal(true);
   }, []);
 
   // Check for updates on mount
@@ -364,6 +370,7 @@ export default function App() {
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
+        onStartUpdate={startSettingsUpdate}
         version="v2.0.0"
       />
     </div>
