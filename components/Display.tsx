@@ -6,9 +6,10 @@ interface DisplayProps {
     value: FormattedValue;
     onBackspace: () => void; // Add backspace handler prop
     memoryActive?: boolean;
+    aeroGlass?: boolean;
 }
 
-const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = false }) => {
+const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = false, aeroGlass = false }) => {
     const { yard, feet, inch, numerator, denominator, isNegative, showFeetLabel, showInchLabel, showYardLabel, showDash, inputBuffer, secondaryDisplay, dimension, dimensionLabel } = value;
 
     // We only render parts that have value or are active
@@ -27,7 +28,7 @@ const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = fa
     return (
         <div
             onClick={onBackspace}
-            className="w-full flex-1 min-h-[160px] rounded-xl border border-[#c6d5e2] bg-[#f8fafc] px-5 py-4 shadow-inner relative flex flex-col justify-between overflow-hidden cursor-pointer active:bg-[#eef3f7] dark:border-[#16304a] dark:bg-[#0d1114] dark:active:bg-[#10161b]"
+            className={`w-full flex-1 min-h-[160px] rounded-xl border border-[#c6d5e2] bg-[#f8fafc] px-5 py-4 shadow-inner relative flex flex-col justify-between overflow-hidden cursor-pointer active:bg-[#eef3f7] dark:border-[#16304a] dark:bg-[#0d1114] dark:active:bg-[#10161b] ${aeroGlass ? 'aero-glass-display' : ''}`}
         >
             <div className="flex justify-between items-start w-full h-6 text-[#85909d] text-[10px] font-mono tracking-[0.16em] uppercase">
                 <span className="flex items-center gap-2">

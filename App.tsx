@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useReducer, useCallback } from 'react';
+import React, { useState, useEffect, useReducer, useCallback, useRef } from 'react';
 import Display from './components/Display';
 import CalculatorButton from './components/CalculatorButton';
 import { ButtonType, Operator } from './types';
@@ -11,8 +11,10 @@ import { SettingsModal } from './components/SettingsModal';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
+  const [visualTheme, setVisualTheme] = useState<'default' | 'aero'>(() => window.localStorage.getItem('ceg-visual-theme') === 'aero' ? 'aero' : 'default');
   const [showSettings, setShowSettings] = useState(false);
   const [showTape, setShowTape] = useState(false);
+  const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fractionDenominator, setFractionDenominator] = useState<number>(() => {
     const stored = Number(window.localStorage.getItem('ceg-fraction-denominator'));
     return [2, 4, 8, 16, 32, 64].includes(stored) ? stored : 64;
@@ -89,6 +91,11 @@ export default function App() {
   const handleFractionDenominatorChange = useCallback((denominator: number) => {
     setFractionDenominator(denominator);
     window.localStorage.setItem('ceg-fraction-denominator', String(denominator));
+  }, []);
+
+  const handleVisualThemeChange = useCallback((theme: 'default' | 'aero') => {
+    setVisualTheme(theme);
+    window.localStorage.setItem('ceg-visual-theme', theme);
   }, []);
 
   const handleNormalDecimalPlacesChange = useCallback((places: number) => {
@@ -177,6 +184,27 @@ export default function App() {
     dispatch({ type: CalculatorActionType.MEMORY_CLEAR });
   }, []);
 
+  const openTapeFromLogo = useCallback(() => {
+    setShowTape(true);
+  }, []);
+
+  const startLogoPress = useCallback(() => {
+    if (logoPressTimer.current) clearTimeout(logoPressTimer.current);
+    logoPressTimer.current = setTimeout(() => {
+      openTapeFromLogo();
+      logoPressTimer.current = null;
+    }, 600);
+  }, [openTapeFromLogo]);
+
+  const cancelLogoPress = useCallback(() => {
+    if (logoPressTimer.current) {
+      clearTimeout(logoPressTimer.current);
+      logoPressTimer.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => cancelLogoPress(), [cancelLogoPress]);
+
   const handleDimension = useCallback((dimension: 1 | 2 | 3) => {
     dispatch({ type: CalculatorActionType.SET_DIMENSION, payload: dimension });
   }, []);
@@ -223,29 +251,29 @@ export default function App() {
     );
 
   return (
-    <div className="flex min-h-[100dvh] w-full select-none items-center justify-center bg-[#e7edf2] p-3 font-display text-[#101820] sm:p-6 dark:bg-[#0d141a] dark:text-white">
-      <div className={`w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
-        <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col`}>
+    <div className={`flex min-h-[100dvh] w-full select-none items-center justify-center bg-[#e7edf2] p-3 font-display text-[#101820] sm:p-6 dark:bg-[#0d141a] dark:text-white ${visualTheme === 'aero' ? 'aero-glass-background' : ''}`}>
+      <div className={`calculator-shell w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${visualTheme === 'aero' ? 'aero-glass-surface' : ''} ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
+        <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col ${visualTheme === 'aero' ? 'aero-glass-display-section' : ''}`}>
           <div className="relative h-12 mb-3 shrink-0">
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div onDoubleClick={() => setShowTape(true)} className="h-12 w-64 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner" title="Tape için iki kez dokunun">
+              <button type="button" onPointerDown={startLogoPress} onPointerUp={cancelLogoPress} onPointerLeave={cancelLogoPress} onPointerCancel={cancelLogoPress} className={`pointer-events-auto h-12 w-64 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner touch-manipulation ${visualTheme === 'aero' ? 'aero-glass-logo' : ''}`} title="Geçmiş işlemler için basılı tutun" aria-label="Geçmiş işlemleri açmak için basılı tutun">
                 <img src="/ceg-calc-logo.png" alt="CEG Calc" className="h-10 w-52 object-contain" />
-              </div>
+              </button>
             </div>
             <button
               onClick={() => setShowSettings(true)}
               aria-label="Ayarları aç"
-              className="absolute right-0 top-0 h-11 w-11 rounded-lg border border-[#c7d4e0] bg-[#e7edf2] text-2xl leading-none text-[#526274] active:translate-y-px dark:border-[#2a3b4e] dark:bg-[#252d36] dark:text-[#c0cad7]"
+              className={`absolute right-0 top-0 h-11 w-11 rounded-lg border border-[#c7d4e0] bg-[#e7edf2] text-2xl leading-none text-[#526274] active:translate-y-px dark:border-[#2a3b4e] dark:bg-[#252d36] dark:text-[#c0cad7] ${visualTheme === 'aero' ? 'aero-glass-control' : ''}`}
             >
               ⚙
             </button>
           </div>
           <div className="flex-1 min-h-0 flex flex-col justify-end">
-          <Display value={displayData} onBackspace={handleBackspace} memoryActive={state.memoryHasValue} />
+          <Display value={displayData} onBackspace={handleBackspace} memoryActive={state.memoryHasValue} aeroGlass={visualTheme === 'aero'} />
           </div>
         </section>
 
-        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#c7d4e0] px-3 py-4 justify-center dark:border-[#1b3446]' : 'flex-[5.2] border-t border-[#c7d4e0] px-3 pb-4 pt-0 dark:border-[#1b3446]'} min-h-0 bg-[#f1f5f8] flex flex-col dark:bg-[#151b20]`}>
+        <section className={`${isLandscape ? 'w-[48%] h-full border-l border-[#c7d4e0] px-3 py-4 justify-center dark:border-[#1b3446]' : 'flex-[5.2] border-t border-[#c7d4e0] px-3 pb-4 pt-0 dark:border-[#1b3446]'} min-h-0 bg-[#f1f5f8] flex flex-col dark:bg-[#151b20] ${visualTheme === 'aero' ? 'aero-glass-keypad' : ''}`}>
           <div
             className={`grid grid-cols-5 grid-rows-5 gap-2 min-h-0 ${isLandscape ? 'aspect-square h-auto self-center' : 'w-full h-[96%] mt-auto'}`}
             style={isLandscape ? { width: 'min(100%, calc(100dvh - 80px))' } : undefined}
@@ -327,6 +355,8 @@ export default function App() {
         onClose={() => setShowSettings(false)}
         darkMode={darkMode}
         toggleTheme={() => setDarkMode(!darkMode)}
+        visualTheme={visualTheme}
+        onVisualThemeChange={handleVisualThemeChange}
         fractionDenominator={fractionDenominator}
         onFractionDenominatorChange={handleFractionDenominatorChange}
         normalDecimalPlaces={normalDecimalPlaces}
@@ -336,7 +366,7 @@ export default function App() {
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
-        version="v1.6.0"
+        version="v1.7.0"
       />
     </div>
   );

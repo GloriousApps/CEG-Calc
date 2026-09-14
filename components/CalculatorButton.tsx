@@ -72,7 +72,7 @@ const CalculatorButton: React.FC<CalculatorButtonProps> = ({
     >
       <button
         onClick={handleClick}
-        className={`${baseClasses} ${typeClasses} ${textClasses} ${className}`}
+        className={`aero-key aero-key-${type} ${baseClasses} ${typeClasses} ${textClasses} ${className}`}
       >
         {label}
       </button>
