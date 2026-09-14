@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/release-v1.7.2-0d3171?style=for-the-badge" alt="Release v1.7.2" />
+  <img src="https://img.shields.io/badge/release-v2.0.0-0d3171?style=for-the-badge" alt="Release v2.0.0" />
   <img src="https://img.shields.io/badge/build-passing-16a34a?style=for-the-badge" alt="Build passing" />
   <img src="https://img.shields.io/badge/android-8.0%2B-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Android 8.0+" />
 </p>
@@ -34,6 +34,15 @@
 - Tape/Geçmiş kaydı; sonuçları yeniden kullanma
 - Ayarlar: kesir hassasiyeti (1/2–1/64), normal/mühendislik ondalık hane (1–6), otomatik/dikey/yatay görünüm
 - Koyu tema ve Android haptic geri bildirim
+- Aero Glass tema: renkleri koruyan parlak cam tuşlar, yansıma, derinlik ve ince ışık çerçeveleri
+- Windows için kurulum gerektirmeyen Portable masaüstü uygulaması; web ve mobildeki klavye kısayollarını destekler
+
+## 2.0.0 ile gelenler
+
+- Aero Glass görünümü; varsayılan tasarımdan bağımsız olarak koyu veya aydınlık renk modunda kullanılabilir
+- Daha profesyonel Ayarlar deneyimi: tema ve renk seçimi ayrı, Teşekkürler ise bağımsız pencerede
+- Kapsül logoya uzun basarak Tape/Geçmiş ekranını açma
+- Windows Portable v1.0: ofis bilgisayarlarında kurulum yapmadan çalıştırılabilir `.exe`
 
 ## Klavye kısayolları
 
@@ -63,4 +72,4 @@ cd android
 
 ## Sürüm
 
-Güncel sürüm: `v1.7.2`
+Güncel mobil sürüm: `v2.0.0` · Windows Portable: `v1.0.0`

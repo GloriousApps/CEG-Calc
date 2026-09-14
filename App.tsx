@@ -255,15 +255,13 @@ export default function App() {
       <div className={`calculator-shell w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${visualTheme === 'aero' ? 'aero-glass-surface' : ''} ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
         <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col ${visualTheme === 'aero' ? 'aero-glass-display-section' : ''}`}>
           <div className="relative h-12 mb-3 shrink-0">
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <button type="button" onPointerDown={startLogoPress} onPointerUp={cancelLogoPress} onPointerLeave={cancelLogoPress} onPointerCancel={cancelLogoPress} className={`pointer-events-auto h-12 w-64 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner touch-manipulation ${visualTheme === 'aero' ? 'aero-glass-logo' : ''}`} title="Geçmiş işlemler için basılı tutun" aria-label="Geçmiş işlemleri açmak için basılı tutun">
-                <img src="/ceg-calc-logo.png" alt="CEG Calc" className="h-10 w-52 object-contain" />
-              </button>
-            </div>
+            <button type="button" onClick={openTapeFromLogo} onPointerDown={startLogoPress} onPointerUp={cancelLogoPress} onPointerLeave={cancelLogoPress} onPointerCancel={cancelLogoPress} onTouchStart={startLogoPress} onTouchEnd={cancelLogoPress} onTouchCancel={cancelLogoPress} className={`absolute left-1/2 top-0 z-10 h-12 w-64 -translate-x-1/2 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner touch-manipulation ${visualTheme === 'aero' ? 'aero-glass-logo' : ''}`} title="Geçmiş işlemler için dokunun veya basılı tutun" aria-label="Geçmiş işlemlerini açmak için dokunun veya basılı tutun">
+              <img src="/ceg-calc-logo.png" alt="CEG Calc" className="h-10 w-52 object-contain" />
+            </button>
             <button
               onClick={() => setShowSettings(true)}
               aria-label="Ayarları aç"
-              className={`absolute right-0 top-0 h-11 w-11 rounded-lg border border-[#c7d4e0] bg-[#e7edf2] text-2xl leading-none text-[#526274] active:translate-y-px dark:border-[#2a3b4e] dark:bg-[#252d36] dark:text-[#c0cad7] ${visualTheme === 'aero' ? 'aero-glass-control' : ''}`}
+              className={`absolute right-0 top-0 z-20 h-11 w-11 rounded-lg border border-[#c7d4e0] bg-[#e7edf2] text-2xl leading-none text-[#526274] active:translate-y-px dark:border-[#2a3b4e] dark:bg-[#252d36] dark:text-[#c0cad7] ${visualTheme === 'aero' ? 'aero-glass-control' : ''}`}
             >
               ⚙
             </button>
@@ -366,7 +364,7 @@ export default function App() {
         orientation={orientation}
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
-        version="v1.7.2"
+        version="v2.0.0"
       />
     </div>
   );
