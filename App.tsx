@@ -241,7 +241,7 @@ export default function App() {
 
   return (
     <div className={`flex min-h-[100dvh] w-full select-none items-center justify-center bg-[#e7edf2] p-3 font-display text-[#101820] sm:p-6 dark:bg-[#0d141a] dark:text-white ${visualTheme === 'aero' ? 'aero-glass-background' : ''}`}>
-      <div className={`calculator-shell w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${visualTheme === 'aero' ? 'aero-glass-surface' : ''} ${isDesktopApp ? 'desktop-calculator-shell h-[calc(100dvh-32px)] max-w-none flex-row' : isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
+      <div className={`calculator-shell w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${visualTheme === 'aero' ? 'aero-glass-surface' : ''} ${isDesktopApp && isLandscape ? 'desktop-calculator-shell h-[calc(100dvh-32px)] max-w-none flex-row' : isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
         <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col ${visualTheme === 'aero' ? 'aero-glass-display-section' : ''}`}>
           <div className="relative h-12 mb-3 shrink-0">
             <button type="button" onClick={openTapeFromLogo} className={`absolute left-1/2 top-0 z-10 h-12 w-64 -translate-x-1/2 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner ${visualTheme === 'aero' ? 'aero-glass-logo' : ''}`} title="Geçmiş işlemler için dokunun" aria-label="Geçmiş işlemlerini açmak için dokunun">
