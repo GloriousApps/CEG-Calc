@@ -1,0 +1,23 @@
+name: Build Windows Portable
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-portable:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build Portable application
+        run: npm run desktop:portable
+      - name: Upload Portable application
+        uses: actions/upload-artifact@v4
+        with:
+          name: CEG_Calc_Portable_Windows
+          path: release/windows/CEG_Calc_Portable_v1.0.0.exe
+          if-no-files-found: error
