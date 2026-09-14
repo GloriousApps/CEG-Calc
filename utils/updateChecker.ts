@@ -62,7 +62,9 @@ export const downloadUpdate = async (
 
     const downloadUrl = apkAsset.browser_download_url;
     const fileName = apkAsset.name;
-    const path = `updates/${fileName}`;
+    // Native Android downloadFile does not create nested cache folders,
+    // even when recursive is set. Keep the update at the cache root.
+    const path = fileName;
 
     const progressListener = await Filesystem.addListener('progress', ({ bytes, contentLength }) => {
         if (contentLength > 0) {
