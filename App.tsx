@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useReducer, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import Display from './components/Display';
 import CalculatorButton from './components/CalculatorButton';
 import { ButtonType, Operator } from './types';
@@ -14,7 +14,6 @@ export default function App() {
   const [visualTheme, setVisualTheme] = useState<'default' | 'aero'>(() => window.localStorage.getItem('ceg-visual-theme') === 'aero' ? 'aero' : 'default');
   const [showSettings, setShowSettings] = useState(false);
   const [showTape, setShowTape] = useState(false);
-  const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fractionDenominator, setFractionDenominator] = useState<number>(() => {
     const stored = Number(window.localStorage.getItem('ceg-fraction-denominator'));
     return [2, 4, 8, 16, 32, 64].includes(stored) ? stored : 64;
@@ -194,23 +193,6 @@ export default function App() {
     setShowTape(true);
   }, []);
 
-  const startLogoPress = useCallback(() => {
-    if (logoPressTimer.current) clearTimeout(logoPressTimer.current);
-    logoPressTimer.current = setTimeout(() => {
-      openTapeFromLogo();
-      logoPressTimer.current = null;
-    }, 600);
-  }, [openTapeFromLogo]);
-
-  const cancelLogoPress = useCallback(() => {
-    if (logoPressTimer.current) {
-      clearTimeout(logoPressTimer.current);
-      logoPressTimer.current = null;
-    }
-  }, []);
-
-  useEffect(() => () => cancelLogoPress(), [cancelLogoPress]);
-
   const handleDimension = useCallback((dimension: 1 | 2 | 3) => {
     dispatch({ type: CalculatorActionType.SET_DIMENSION, payload: dimension });
   }, []);
@@ -261,7 +243,7 @@ export default function App() {
       <div className={`calculator-shell w-full overflow-hidden rounded-[30px] bg-white shadow-2xl dark:bg-[#171e24] ${visualTheme === 'aero' ? 'aero-glass-surface' : ''} ${isLandscape ? 'max-w-[1100px] h-[min(560px,calc(100dvh-32px))] flex-row' : 'max-w-[492px] h-[calc(100dvh-24px)] sm:h-[850px] sm:max-h-[90dvh] flex-col'} flex`}>
         <section className={`${isLandscape ? 'w-[52%] h-full pb-6' : 'flex-[4.8] pb-4'} min-h-0 px-6 pt-5 flex flex-col ${visualTheme === 'aero' ? 'aero-glass-display-section' : ''}`}>
           <div className="relative h-12 mb-3 shrink-0">
-            <button type="button" onClick={openTapeFromLogo} onPointerDown={startLogoPress} onPointerUp={cancelLogoPress} onPointerLeave={cancelLogoPress} onPointerCancel={cancelLogoPress} onTouchStart={startLogoPress} onTouchEnd={cancelLogoPress} onTouchCancel={cancelLogoPress} className={`absolute left-1/2 top-0 z-10 h-12 w-64 -translate-x-1/2 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner touch-manipulation ${visualTheme === 'aero' ? 'aero-glass-logo' : ''}`} title="Geçmiş işlemler için dokunun veya basılı tutun" aria-label="Geçmiş işlemlerini açmak için dokunun veya basılı tutun">
+            <button type="button" onClick={openTapeFromLogo} className={`absolute left-1/2 top-0 z-10 h-12 w-64 -translate-x-1/2 rounded-full bg-[#11306e] px-3 flex items-center justify-center shadow-inner ${visualTheme === 'aero' ? 'aero-glass-logo' : ''}`} title="Geçmiş işlemler için dokunun" aria-label="Geçmiş işlemlerini açmak için dokunun">
               <img src="/ceg-calc-logo.png" alt="CEG Calc" className="h-10 w-52 object-contain" />
             </button>
             <button
@@ -371,7 +353,7 @@ export default function App() {
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
         onStartUpdate={startSettingsUpdate}
-        version="v2.0.1"
+        version="v2.0.2"
       />
     </div>
   );

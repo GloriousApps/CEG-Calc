@@ -1,7 +1,7 @@
 {
   "name": "ceg-calc-1.0",
   "private": true,
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
