@@ -59,6 +59,8 @@ export interface CalculatorState {
   operator: Operator;
   waitingForOperand: boolean; // True if we just hit +, -, *, /
   previousValue: number | null;
+  previousDimension: number; // The dimension of the stored left operand
+  previousIsUnitless: boolean; // Whether the stored left operand is dimensionless
   memory: number;
   memoryHasValue: boolean;
   memoryDimension: number;

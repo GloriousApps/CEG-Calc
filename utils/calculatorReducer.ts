@@ -49,6 +49,8 @@ export const initialCalculatorState: CalculatorState = {
     operator: Operator.None,
     waitingForOperand: false,
     previousValue: null,
+    previousDimension: 1,
+    previousIsUnitless: true,
     memory: 0,
     memoryHasValue: false,
     memoryDimension: 1,
@@ -85,6 +87,33 @@ const performCalculation = (op: Operator, prev: number, current: number) => {
     }
 };
 
+const calculateResultMetadata = (
+    op: Operator,
+    previousIsUnitless: boolean,
+    previousDimension: number,
+    currentIsUnitless: boolean,
+    currentDimension: number
+) => {
+    const previousExponent = previousIsUnitless ? 0 : previousDimension;
+    const currentExponent = currentIsUnitless ? 0 : currentDimension;
+
+    if (op === Operator.Multiply || op === Operator.Divide) {
+        const exponent = op === Operator.Multiply
+            ? previousExponent + currentExponent
+            : previousExponent - currentExponent;
+
+        return {
+            dimension: exponent === 0 ? 1 : Math.min(3, Math.max(1, exponent)),
+            isUnitless: exponent === 0
+        };
+    }
+
+    return {
+        dimension: previousExponent || currentExponent || 1,
+        isUnitless: previousExponent === 0 && currentExponent === 0
+    };
+};
+
 export const calculatorReducer = (state: CalculatorState, action: CalculatorAction): CalculatorState => {
     switch (action.type) {
         case CalculatorActionType.NUMBER: {
@@ -93,7 +122,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 return {
                     ...resetConversion(state),
                     inputBuffer: num,
-                    builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
+                    builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: state.builder.dimension },
                     waitingForOperand: false
                 };
             } else {
@@ -109,7 +138,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 return {
                     ...resetConversion(state),
                     inputBuffer: '0.',
-                    builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
+                    builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: state.builder.dimension },
                     waitingForOperand: false
                 };
             } else {
@@ -307,6 +336,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 return {
                     ...resetConversion(state),
                     previousValue: inputValue,
+                    previousDimension: currentDim,
+                    previousIsUnitless: effectiveIsUnitless,
                     waitingForOperand: true,
                     operator: nextOperator,
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
@@ -317,31 +348,27 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 };
             } else if (state.operator) {
                 const result = performCalculation(state.operator, state.previousValue, inputValue);
-                const newIsUnitless = state.isUnitless && currentInputUnitless;
-
-                // DIMENSION ARITHMETIC for chained operations
-                const currentInputDim = state.builder.dimension;
-                const prevEffectiveDim = state.isUnitless ? 0 : state.activeDimension;
-                const currentEffectiveDim = currentInputUnitless ? 0 : currentInputDim;
-
-                let resultDim = state.activeDimension;
-                if (state.operator === Operator.Multiply) {
-                    resultDim = prevEffectiveDim + currentEffectiveDim;
-                } else if (state.operator === Operator.Divide) {
-                    resultDim = prevEffectiveDim - currentEffectiveDim;
-                }
-                resultDim = Math.min(3, Math.max(1, resultDim));
+                const currentInputDim = hasNewInput ? state.builder.dimension : state.activeDimension;
+                const resultMetadata = calculateResultMetadata(
+                    state.operator,
+                    state.previousIsUnitless,
+                    state.previousDimension,
+                    currentInputUnitless,
+                    currentInputDim
+                );
 
                 return {
                     ...resetConversion(state),
                     displayValue: result,
                     previousValue: result,
+                    previousDimension: resultMetadata.dimension,
+                    previousIsUnitless: resultMetadata.isUnitless,
                     waitingForOperand: true,
                     operator: nextOperator,
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
                     inputBuffer: '',
-                    isUnitless: newIsUnitless,
-                    activeDimension: resultDim
+                    isUnitless: resultMetadata.isUnitless,
+                    activeDimension: resultMetadata.dimension
                 };
             }
             return state;
@@ -371,34 +398,19 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 }
             }
 
-            const newIsUnitless = state.isUnitless && currentInputUnitless;
             const result = performCalculation(state.operator, state.previousValue, currentValue);
-
-            // DIMENSION ARITHMETIC: Calculate result dimension based on operation
-            // For unitless values, treat dimension as 0 in calculations
-            const prevEffectiveDim = state.isUnitless ? 0 : state.activeDimension;
-            const currentEffectiveDim = currentInputUnitless ? 0 : currentInputDim;
-
-            let resultDim = state.activeDimension; // Default to prev dimension
-
-            if (state.operator === Operator.Multiply) {
-                // Area × Length = Volume (2 + 1 = 3)
-                // Linear × Linear = Area (1 + 1 = 2)
-                resultDim = prevEffectiveDim + currentEffectiveDim;
-            } else if (state.operator === Operator.Divide) {
-                // Volume ÷ Length = Area (3 - 1 = 2)
-                // Area ÷ Length = Linear (2 - 1 = 1)
-                resultDim = prevEffectiveDim - currentEffectiveDim;
-            }
-            // For Add/Subtract, dimension stays the same as the first operand
-
-            // Clamp to valid range [1, 3], treat 0 as 1 (linear)
-            resultDim = Math.min(3, Math.max(1, resultDim));
+            const resultMetadata = calculateResultMetadata(
+                state.operator,
+                state.previousIsUnitless,
+                state.previousDimension,
+                currentInputUnitless,
+                currentInputDim
+            );
 
             // AUTO-CONVERSION LOGIC
             let autoConvertedUnit: 'feet' | 'inch' | 'yard' | null = null;
 
-            if (resultDim === 2) {
+            if (!resultMetadata.isUnitless && resultMetadata.dimension === 2) {
                 // AREA: Default to Sq Feet unless inputs were specifically Inch or Yard
                 // If user did Inch x Inch = Sq Inch
                 // If user did Feet x Feet = Sq Feet
@@ -412,7 +424,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 } else {
                     autoConvertedUnit = 'feet'; // Default Area unit
                 }
-            } else if (resultDim === 3) {
+            } else if (!resultMetadata.isUnitless && resultMetadata.dimension === 3) {
                 // VOLUME: User explicitly requested "Sq feet x inch = cubic yard"
                 // Construction standard is often Cubic Yards for volume (concrete etc)
                 autoConvertedUnit = 'yard';
@@ -422,15 +434,17 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 ...resetConversion(state), // First reset
                 displayValue: result,
                 previousValue: null,
+                previousDimension: 1,
+                previousIsUnitless: true,
                 operator: Operator.None,
                 waitingForOperand: true,
                 inputBuffer: '',
                 builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
-                isUnitless: newIsUnitless,
-                activeDimension: resultDim,
+                isUnitless: resultMetadata.isUnitless,
+                activeDimension: resultMetadata.dimension,
                 // Apply auto-conversion if valid unit is found, otherwise null (displays as preferred/default)
                 convertedUnit: autoConvertedUnit,
-                convertedDimension: resultDim,
+                convertedDimension: resultMetadata.dimension,
                 isConversionMode: !!autoConvertedUnit,
                 preferredUnit: autoConvertedUnit || state.preferredUnit,
                 tape: [
@@ -438,8 +452,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     {
                         expression: `${state.previousValue} ${state.operator} ${currentValue}`,
                         result,
-                        dimension: resultDim,
-                        isUnitless: newIsUnitless,
+                        dimension: resultMetadata.dimension,
+                        isUnitless: resultMetadata.isUnitless,
                         preferredUnit: autoConvertedUnit || state.preferredUnit
                     }
                 ].slice(-50)
