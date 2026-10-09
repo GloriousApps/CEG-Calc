@@ -56,6 +56,7 @@ export interface CalculatorState {
   displayValue: number; // The calculated result (decimal feet)
   builder: BuilderState; // The current value being typed
   inputBuffer: string; // The raw numbers being typed before pressing a unit
+  liveExpression: string; // The full current operation shown live above the display (e.g. "5' 9\" + 8' 2\" - 4' 1\"")
   operator: Operator;
   waitingForOperand: boolean; // True if we just hit +, -, *, /
   previousValue: number | null;
