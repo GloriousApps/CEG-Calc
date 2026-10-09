@@ -285,6 +285,100 @@ export const builderToDisplay = (builder: BuilderState, buffer: string, preferre
     };
 };
 
+// Helper to format a BuilderState + inputBuffer into a compact expression string
+// e.g. "5' 9\"" or "5' 9\" 1/2" or "SQ 3' 2\"" or "1/2"
+export const builderToExpressionString = (b: BuilderState, buffer: string): string => {
+    const dimPrefix = getDimPrefix(b.dimension);
+
+    // Determine the active value being typed (mirrors builderToDisplay preview logic)
+    let previewFeet = b.feet;
+    let previewYard = b.yard;
+    let previewInch = b.inch;
+    let previewNum = b.numerator;
+    let previewDenom = b.denominator;
+
+    if (buffer) {
+        const val = parseInt(buffer);
+        if (b.yard !== null) {
+            if (b.feet === null) previewFeet = val;
+        }
+        else if (b.feet !== null) {
+            if (b.inch === null) {
+                previewInch = val;
+            } else if (b.numerator === null) {
+                previewNum = val;
+            } else {
+                previewDenom = val;
+            }
+        }
+        else if (b.numerator !== null) {
+            previewDenom = val;
+        }
+        else if (b.inch !== null) {
+            if (b.numerator === null) {
+                previewNum = val;
+            } else {
+                previewDenom = val;
+            }
+        }
+        else {
+            previewFeet = val;
+        }
+    }
+
+    const parts: string[] = [];
+
+    if (previewYard !== null && previewYard !== 0) {
+        parts.push(`${dimPrefix}${previewYard} YD`);
+    }
+
+    if (previewFeet !== null && previewFeet !== 0) {
+        parts.push(`${dimPrefix}${previewFeet}'`);
+    }
+
+    if (previewInch !== null && previewInch !== 0) {
+        parts.push(`${dimPrefix}${previewInch}"`);
+    }
+
+    if (previewNum !== null && previewNum !== 0) {
+        if (previewDenom !== null && previewDenom !== 0) {
+            parts.push(`${previewNum}/${previewDenom}`);
+        } else {
+            parts.push(`${previewNum}/`);
+        }
+    }
+
+    // Nothing set yet: show the raw buffer (pure number being typed)
+    if (parts.length === 0) {
+        return buffer || '';
+    }
+
+    return parts.join(' ');
+};
+
+// Helper to format a decimal feet value into a compact expression string
+// e.g. 5.75 -> "5' 9\"" or "5' 9\" 1/2"
+export const decimalToExpressionString = (
+    decimalFeet: number,
+    preferredUnit: 'feet' | 'inch' | 'yard' = 'feet',
+    isUnitless: boolean = false,
+    fractionDenominator: number = 64
+): string => {
+    const fv = formatConstructionUnit(decimalFeet, null, 1, 1, preferredUnit, isUnitless, fractionDenominator);
+
+    if (isUnitless) {
+        return String(parseFloat(decimalFeet.toFixed(6)));
+    }
+
+    const parts: string[] = [];
+    if (fv.yard !== 0) parts.push(`${fv.yard} YD`);
+    if (fv.feet !== 0) parts.push(`${fv.feet}'`);
+    if (fv.inch !== 0) parts.push(`${fv.inch}"`);
+    if (fv.numerator > 0) parts.push(`${fv.numerator}/${fv.denominator}`);
+    if (parts.length === 0) return '0';
+    return parts.join(' ');
+};
+
 export const convertBuilderToDecimal = (b: BuilderState, buffer: string): number => {
     let val = 0;
 

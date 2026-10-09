@@ -1,7 +1,7 @@
 {
   "name": "ceg-calc-1.0",
   "private": true,
-  "version": "2.0.2",
+  "version": "2.2.0",
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -45,10 +45,10 @@
     ],
     "win": {
       "target": ["portable"],
-      "artifactName": "CEG_Calc_Portable_v1.0.0.${ext}"
+      "artifactName": "CEG_Calc_Portable_v${version}.${ext}"
     },
     "portable": {
-      "artifactName": "CEG_Calc_Portable_v1.0.0.${ext}"
+      "artifactName": "CEG_Calc_Portable_v${version}.${ext}"
     }
   }
 }

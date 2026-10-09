@@ -236,7 +236,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.build.outputs.version }}
-          files: release/windows/CEG_Calc_Portable_v1.0.0.exe
+          files: release/windows/CEG_Calc_Portable_v${{ needs.build.outputs.version }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
