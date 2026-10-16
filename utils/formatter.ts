@@ -55,7 +55,7 @@ export const formatConstructionUnit = (
         const dimPrefix = getDimPrefix(primaryDimension);
         const convPower = primaryDimension === 2 ? 2 : 3;
 
-        let val = decimalFeet;
+        let val = Math.abs(decimalFeet);
         let unitLabel = '';
 
         if (displayUnit === 'feet') {
@@ -225,7 +225,7 @@ export const builderToDisplay = (builder: BuilderState, buffer: string, preferre
 
     // Visual logic mapping buffer to the active slot
     if (buffer) {
-        const val = parseInt(buffer);
+        const val = parseFloat(buffer);
         if (builder.yard === null && builder.feet === null && builder.inch === null && builder.numerator === null) {
             // No units or fraction set yet, ambiguous.
         }
@@ -287,6 +287,10 @@ export const builderToDisplay = (builder: BuilderState, buffer: string, preferre
 
 export const convertBuilderToDecimal = (b: BuilderState, buffer: string): number => {
     let val = 0;
+
+    if (b.numerator !== null && (b.denominator === 0 || (b.denominator === null && buffer !== '' && parseFloat(buffer) === 0))) {
+        return Number.NaN;
+    }
 
     // Check if this is explicitly a Unitless operation (Pure Math)
     // It is unitless if no dimensions (feet, inch, yard) have been set.

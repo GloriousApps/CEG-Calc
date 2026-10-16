@@ -60,7 +60,8 @@ export const initialCalculatorState: CalculatorState = {
     convertedDimension: 1,
     activeDimension: 1,
     isUnitless: true,
-    preferredUnit: 'feet'
+    preferredUnit: 'feet',
+    errorMessage: null
 };
 
 // Helpers
@@ -75,14 +76,89 @@ const isBuilderUnitless = (b: BuilderState): boolean => {
     return b.feet === null && b.inch === null && b.yard === null;
 };
 
-const performCalculation = (op: Operator, prev: number, current: number) => {
+const performCalculation = (op: Operator, prev: number, current: number): number | null => {
+    if (!Number.isFinite(prev) || !Number.isFinite(current)) return null;
+
     switch (op) {
         case Operator.Add: return prev + current;
         case Operator.Subtract: return prev - current;
         case Operator.Multiply: return prev * current;
-        case Operator.Divide: return prev / current;
+        case Operator.Divide: return current === 0 ? null : prev / current;
         default: return current;
     }
+};
+
+interface CalculationMetadata {
+    isUnitless: boolean;
+    dimension: number;
+}
+
+const getCalculationMetadata = (
+    operator: Operator,
+    previousIsUnitless: boolean,
+    previousDimension: number,
+    currentIsUnitless: boolean,
+    currentDimension: number
+): CalculationMetadata | null => {
+    if (operator === Operator.Add || operator === Operator.Subtract) {
+        if (!previousIsUnitless && !currentIsUnitless && previousDimension !== currentDimension) {
+            return null;
+        }
+
+        const isUnitless = previousIsUnitless && currentIsUnitless;
+        return {
+            isUnitless,
+            dimension: isUnitless ? 1 : (previousIsUnitless ? currentDimension : previousDimension)
+        };
+    }
+
+    const previousEffectiveDimension = previousIsUnitless ? 0 : previousDimension;
+    const currentEffectiveDimension = currentIsUnitless ? 0 : currentDimension;
+    const dimension = operator === Operator.Multiply
+        ? previousEffectiveDimension + currentEffectiveDimension
+        : previousEffectiveDimension - currentEffectiveDimension;
+
+    // Only linear, square and cubic construction dimensions are supported.
+    if (dimension < 0 || dimension > 3) return null;
+
+    return {
+        isUnitless: dimension === 0,
+        dimension: dimension === 0 ? 1 : dimension
+    };
+};
+
+interface MemoryOperand {
+    value: number;
+    dimension: number;
+    isUnitless: boolean;
+    preferredUnit: 'feet' | 'inch' | 'yard';
+}
+
+const getMemoryOperand = (state: CalculatorState): MemoryOperand | null => {
+    const hasNewInput = state.builder.feet !== null || state.builder.inch !== null || state.builder.yard !== null || state.builder.numerator !== null || state.inputBuffer !== '';
+    const value = hasNewInput ? convertBuilderToDecimal(state.builder, state.inputBuffer) : state.displayValue;
+    const isUnitless = hasNewInput ? isBuilderUnitless(state.builder) : state.isUnitless;
+    const dimension = hasNewInput ? state.builder.dimension : state.activeDimension;
+
+    if (!Number.isFinite(value)) return null;
+    if (!state.memoryHasValue) {
+        return { value, dimension, isUnitless, preferredUnit: state.preferredUnit };
+    }
+    if (!state.memoryIsUnitless && !isUnitless && state.memoryDimension !== dimension) return null;
+
+    let normalizedValue = value;
+    if (isUnitless && !state.memoryIsUnitless) {
+        const power = state.memoryDimension === 1 ? 1 : (state.memoryDimension === 2 ? 2 : 3);
+        if (state.memoryPreferredUnit === 'inch') normalizedValue /= Math.pow(12, power);
+        if (state.memoryPreferredUnit === 'yard') normalizedValue *= Math.pow(3, power);
+    }
+
+    return {
+        value: normalizedValue,
+        dimension: state.memoryIsUnitless ? dimension : state.memoryDimension,
+        isUnitless: state.memoryIsUnitless && isUnitless,
+        preferredUnit: state.memoryIsUnitless ? state.preferredUnit : state.memoryPreferredUnit
+    };
 };
 
 export const calculatorReducer = (state: CalculatorState, action: CalculatorAction): CalculatorState => {
@@ -94,12 +170,14 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     ...resetConversion(state),
                     inputBuffer: num,
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
-                    waitingForOperand: false
+                    waitingForOperand: false,
+                    errorMessage: null
                 };
             } else {
                 return {
                     ...resetConversion(state),
-                    inputBuffer: state.inputBuffer + num
+                    inputBuffer: state.inputBuffer + num,
+                    errorMessage: null
                 };
             }
         }
@@ -110,15 +188,17 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     ...resetConversion(state),
                     inputBuffer: '0.',
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
-                    waitingForOperand: false
+                    waitingForOperand: false,
+                    errorMessage: null
                 };
             } else {
                 if (state.inputBuffer.includes('.')) return state;
                 const nextBuffer = state.inputBuffer === '' ? '0.' : '.';
                 return {
-                    ...resetConversion(state),
-                    inputBuffer: state.inputBuffer + nextBuffer
-                };
+                        ...resetConversion(state),
+                        inputBuffer: state.inputBuffer + nextBuffer,
+                        errorMessage: null
+                    };
             }
         }
 
@@ -182,6 +262,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
             // Normal Unit Assignment
             const val = parseFloat(state.inputBuffer || '0');
 
+            if (!Number.isFinite(val)) return { ...state, errorMessage: 'Geçerli bir değer girin.' };
+
             const isCycling = state.inputBuffer === '' && state.builder[unit] !== null;
 
             if (isCycling) {
@@ -198,6 +280,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
             const newBuilder = { ...newState.builder };
 
             if (newBuilder.numerator !== null && newBuilder.denominator === null && state.inputBuffer !== '') {
+                if (val === 0) return { ...state, errorMessage: 'Kesrin paydası sıfır olamaz.' };
                 newBuilder.denominator = val;
 
                 // CRITICAL FIX: If we just completed a fraction (e.g. 1/4) and unit is INCH,
@@ -217,12 +300,15 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 builder: newBuilder,
                 inputBuffer: '',
                 isUnitless: false,
-                preferredUnit: unit
+                preferredUnit: unit,
+                errorMessage: null
             };
         }
 
         case CalculatorActionType.FRACTION: {
-            const val = parseInt(state.inputBuffer || '0');
+            if (state.inputBuffer === '') return { ...state, errorMessage: 'Kesir payını önce girin.' };
+            const val = parseFloat(state.inputBuffer);
+            if (!Number.isFinite(val)) return { ...state, errorMessage: 'Geçerli bir kesir payı girin.' };
 
             // If starting a fraction and no units are defined, default to INCH (User preference)
             // CRITICAL: Also set builder.inch = 0 to mark this as a DIMENSIONED value
@@ -242,7 +328,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 ...resetConversion(state),
                 builder: newBuilder,
                 inputBuffer: '',
-                preferredUnit: newPreferredUnit
+                preferredUnit: newPreferredUnit,
+                errorMessage: null
             };
         }
 
@@ -250,7 +337,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
             if (state.inputBuffer.length > 0) {
                 return {
                     ...resetConversion(state),
-                    inputBuffer: state.inputBuffer.slice(0, -1)
+                    inputBuffer: state.inputBuffer.slice(0, -1),
+                    errorMessage: null
                 };
             }
             const b = { ...state.builder };
@@ -266,7 +354,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 b.dimension = 1;
             }
 
-            return { ...resetConversion(state), builder: b, inputBuffer: newBuffer };
+            return { ...resetConversion(state), builder: b, inputBuffer: newBuffer, errorMessage: null };
         }
 
         case CalculatorActionType.OPERATOR: {
@@ -292,6 +380,10 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 }
             }
 
+            if (!Number.isFinite(inputValue)) {
+                return { ...state, errorMessage: 'Geçerli bir işlem değeri girin.' };
+            }
+
             const isSettingFirstOperand = state.previousValue == null;
 
             if (isSettingFirstOperand) {
@@ -313,7 +405,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     inputBuffer: '',
                     displayValue: inputValue,
                     activeDimension: currentDim,
-                    isUnitless: effectiveIsUnitless
+                    isUnitless: effectiveIsUnitless,
+                    errorMessage: null
                 };
             } else if (!hasNewInput && state.waitingForOperand && state.operator) {
                 // Consecutive operator presses only replace the pending operator.
@@ -324,20 +417,21 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 };
             } else if (state.operator) {
                 const result = performCalculation(state.operator, state.previousValue, inputValue);
-                const newIsUnitless = state.isUnitless && currentInputUnitless;
-
-                // DIMENSION ARITHMETIC for chained operations
                 const currentInputDim = state.builder.dimension;
-                const prevEffectiveDim = state.isUnitless ? 0 : state.activeDimension;
-                const currentEffectiveDim = currentInputUnitless ? 0 : currentInputDim;
+                const metadata = result === null ? null : getCalculationMetadata(
+                    state.operator,
+                    state.isUnitless,
+                    state.activeDimension,
+                    currentInputUnitless,
+                    currentInputDim
+                );
 
-                let resultDim = state.activeDimension;
-                if (state.operator === Operator.Multiply) {
-                    resultDim = prevEffectiveDim + currentEffectiveDim;
-                } else if (state.operator === Operator.Divide) {
-                    resultDim = prevEffectiveDim - currentEffectiveDim;
+                if (result === null) {
+                    return { ...state, errorMessage: 'Sıfıra bölme yapılamaz.' };
                 }
-                resultDim = Math.min(3, Math.max(1, resultDim));
+                if (!metadata) {
+                    return { ...state, errorMessage: 'Bu boyutlarla işlem yapılamaz.' };
+                }
 
                 return {
                     ...resetConversion(state),
@@ -347,8 +441,9 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     operator: nextOperator,
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
                     inputBuffer: '',
-                    isUnitless: newIsUnitless,
-                    activeDimension: resultDim
+                    isUnitless: metadata.isUnitless,
+                    activeDimension: metadata.dimension,
+                    errorMessage: null
                 };
             }
             return state;
@@ -378,34 +473,33 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 }
             }
 
-            const newIsUnitless = state.isUnitless && currentInputUnitless;
-            const result = performCalculation(state.operator, state.previousValue, currentValue);
-
-            // DIMENSION ARITHMETIC: Calculate result dimension based on operation
-            // For unitless values, treat dimension as 0 in calculations
-            const prevEffectiveDim = state.isUnitless ? 0 : state.activeDimension;
-            const currentEffectiveDim = currentInputUnitless ? 0 : currentInputDim;
-
-            let resultDim = state.activeDimension; // Default to prev dimension
-
-            if (state.operator === Operator.Multiply) {
-                // Area × Length = Volume (2 + 1 = 3)
-                // Linear × Linear = Area (1 + 1 = 2)
-                resultDim = prevEffectiveDim + currentEffectiveDim;
-            } else if (state.operator === Operator.Divide) {
-                // Volume ÷ Length = Area (3 - 1 = 2)
-                // Area ÷ Length = Linear (2 - 1 = 1)
-                resultDim = prevEffectiveDim - currentEffectiveDim;
+            if (!Number.isFinite(currentValue)) {
+                return { ...state, errorMessage: 'Geçerli bir işlem değeri girin.' };
             }
-            // For Add/Subtract, dimension stays the same as the first operand
 
-            // Clamp to valid range [1, 3], treat 0 as 1 (linear)
-            resultDim = Math.min(3, Math.max(1, resultDim));
+            const result = performCalculation(state.operator, state.previousValue, currentValue);
+            if (result === null) {
+                return { ...state, errorMessage: 'Sıfıra bölme yapılamaz.' };
+            }
+
+            const metadata = getCalculationMetadata(
+                state.operator,
+                state.isUnitless,
+                state.activeDimension,
+                currentInputUnitless,
+                currentInputDim
+            );
+            if (!metadata) {
+                return { ...state, errorMessage: 'Bu boyutlarla işlem yapılamaz.' };
+            }
+
+            const newIsUnitless = metadata.isUnitless;
+            const resultDim = metadata.dimension;
 
             // AUTO-CONVERSION LOGIC
             let autoConvertedUnit: 'feet' | 'inch' | 'yard' | null = null;
 
-            if (resultDim === 2) {
+            if (!newIsUnitless && resultDim === 2) {
                 // AREA: Default to Sq Feet unless inputs were specifically Inch or Yard
                 // If user did Inch x Inch = Sq Inch
                 // If user did Feet x Feet = Sq Feet
@@ -419,7 +513,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 } else {
                     autoConvertedUnit = 'feet'; // Default Area unit
                 }
-            } else if (resultDim === 3) {
+            } else if (!newIsUnitless && resultDim === 3) {
                 // VOLUME: User explicitly requested "Sq feet x inch = cubic yard"
                 // Construction standard is often Cubic Yards for volume (concrete etc)
                 autoConvertedUnit = 'yard';
@@ -440,6 +534,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 convertedDimension: resultDim,
                 isConversionMode: !!autoConvertedUnit,
                 preferredUnit: autoConvertedUnit || state.preferredUnit,
+                errorMessage: null,
                 tape: [
                     ...state.tape,
                     {
@@ -494,28 +589,32 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
         }
 
         case CalculatorActionType.MEMORY_ADD: {
-            const hasNewInput = state.builder.feet !== null || state.builder.inch !== null || state.builder.yard !== null || state.builder.numerator !== null || state.inputBuffer !== '';
-            const value = hasNewInput ? convertBuilderToDecimal(state.builder, state.inputBuffer) : state.displayValue;
+            const operand = getMemoryOperand(state);
+            if (!operand) return { ...state, errorMessage: 'Bellekte uyumsuz boyutlar toplanamaz.' };
+            const memoryWasEmpty = !state.memoryHasValue;
             return {
                 ...state,
-                memory: state.memory + value,
+                memory: state.memory + operand.value,
                 memoryHasValue: true,
-                memoryDimension: hasNewInput ? state.builder.dimension : state.activeDimension,
-                memoryIsUnitless: hasNewInput ? isBuilderUnitless(state.builder) : state.isUnitless,
-                memoryPreferredUnit: state.preferredUnit,
+                memoryDimension: memoryWasEmpty || state.memoryIsUnitless ? operand.dimension : state.memoryDimension,
+                memoryIsUnitless: memoryWasEmpty ? operand.isUnitless : (state.memoryIsUnitless && operand.isUnitless),
+                memoryPreferredUnit: memoryWasEmpty || state.memoryIsUnitless ? operand.preferredUnit : state.memoryPreferredUnit,
+                errorMessage: null
             };
         }
 
         case CalculatorActionType.MEMORY_SUBTRACT: {
-            const hasNewInput = state.builder.feet !== null || state.builder.inch !== null || state.builder.yard !== null || state.builder.numerator !== null || state.inputBuffer !== '';
-            const value = hasNewInput ? convertBuilderToDecimal(state.builder, state.inputBuffer) : state.displayValue;
+            const operand = getMemoryOperand(state);
+            if (!operand) return { ...state, errorMessage: 'Bellekte uyumsuz boyutlar çıkarılamaz.' };
+            const memoryWasEmpty = !state.memoryHasValue;
             return {
                 ...state,
-                memory: state.memory - value,
+                memory: state.memory - operand.value,
                 memoryHasValue: true,
-                memoryDimension: hasNewInput ? state.builder.dimension : state.activeDimension,
-                memoryIsUnitless: hasNewInput ? isBuilderUnitless(state.builder) : state.isUnitless,
-                memoryPreferredUnit: state.preferredUnit,
+                memoryDimension: memoryWasEmpty || state.memoryIsUnitless ? operand.dimension : state.memoryDimension,
+                memoryIsUnitless: memoryWasEmpty ? operand.isUnitless : (state.memoryIsUnitless && operand.isUnitless),
+                memoryPreferredUnit: memoryWasEmpty || state.memoryIsUnitless ? operand.preferredUnit : state.memoryPreferredUnit,
+                errorMessage: null
             };
         }
 

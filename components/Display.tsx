@@ -7,9 +7,10 @@ interface DisplayProps {
     onBackspace: () => void; // Add backspace handler prop
     memoryActive?: boolean;
     aeroGlass?: boolean;
+    errorMessage?: string | null;
 }
 
-const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = false, aeroGlass = false }) => {
+const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = false, aeroGlass = false, errorMessage = null }) => {
     const { yard, feet, inch, numerator, denominator, isNegative, showFeetLabel, showInchLabel, showYardLabel, showDash, inputBuffer, secondaryDisplay, dimension, dimensionLabel } = value;
 
     // We only render parts that have value or are active
@@ -41,7 +42,9 @@ const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = fa
                 {/* Main Numbers (Top Row) */}
                 <div className="flex items-end justify-end w-full select-none pb-1">
 
-                    {dimension > 1 && dimensionLabel ? (
+                    {errorMessage ? (
+                        <span className="text-3xl font-semibold text-right text-[#c0392b] dark:text-[#ff8f86]">{errorMessage}</span>
+                    ) : dimension > 1 && dimensionLabel ? (
                         <div className="flex w-full flex-col items-end justify-end">
                                 <span className="text-6xl sm:text-[5rem] font-mono text-[#17212b] break-all text-right leading-tight dark:text-[#f1f3f6]">
                                 {isNegative ? '-' : ''}{dimensionValue}
@@ -83,7 +86,7 @@ const Display: React.FC<DisplayProps> = ({ value, onBackspace, memoryActive = fa
 
 
                             {/* Feet */}
-                            {((hasFeet || showFeetLabel) && !showYardLabel) && (
+                            {(hasFeet || showFeetLabel) && (
                                 <div className="flex flex-col items-center">
                                     <span className="text-5xl sm:text-[4rem] font-mono leading-none">
                                         {feet}

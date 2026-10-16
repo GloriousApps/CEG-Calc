@@ -257,7 +257,7 @@ export default function App() {
             </button>
           </div>
           <div className="flex-1 min-h-0 flex flex-col justify-end">
-          <Display value={displayData} onBackspace={handleBackspace} memoryActive={state.memoryHasValue} aeroGlass={visualTheme === 'aero'} />
+           <Display value={displayData} onBackspace={handleBackspace} memoryActive={state.memoryHasValue} aeroGlass={visualTheme === 'aero'} errorMessage={state.errorMessage} />
           </div>
         </section>
 

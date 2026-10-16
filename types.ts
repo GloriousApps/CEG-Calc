@@ -71,4 +71,5 @@ export interface CalculatorState {
   activeDimension: number; // The dimension of the current result (1, 2, or 3)
   isUnitless: boolean; // True if the current result has no specific unit assigned (pure math)
   preferredUnit: 'feet' | 'inch' | 'yard'; // ADDED: Tracks the user's preferred unit for display (default 'feet')
+  errorMessage: string | null;
 }
