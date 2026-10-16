@@ -56,9 +56,39 @@
 
 ## Development
 
+The Node.js version is pinned in `.nvmrc` (`24.12.0`).
+
 ```bash
-npm install
+npm ci
 npm run dev
+```
+
+Run the tests:
+
+```bash
+npm test
+```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+Run with Docker:
+
+```bash
+docker build -t ceg-calc .
+docker run --rm -p 4173:4173 ceg-calc
+```
+
+Then open `http://localhost:4173`. For local values such as `GEMINI_API_KEY`, copy `.env.example` to `.env`; never commit real credentials.
+
+For deployment, push the built image to your registry and run it with the same port mapping:
+
+```bash
+docker tag ceg-calc <registry>/ceg-calc:<tag>
+docker push <registry>/ceg-calc:<tag>
 ```
 
 To build an Android debug APK:

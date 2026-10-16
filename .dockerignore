@@ -1,0 +1,11 @@
+.git
+.opencode
+node_modules
+dist
+release
+android/.gradle
+android/build
+*.log
+.env
+.env.*
+!.env.example

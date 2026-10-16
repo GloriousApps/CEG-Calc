@@ -56,9 +56,39 @@
 
 ## Geliştirme
 
+Node.js sürümü `.nvmrc` dosyasında sabitlenmiştir (`24.12.0`).
+
 ```bash
-npm install
+npm ci
 npm run dev
+```
+
+Testleri çalıştırmak için:
+
+```bash
+npm test
+```
+
+Üretim derlemesi için:
+
+```bash
+npm run build
+```
+
+Docker ile çalıştırmak için:
+
+```bash
+docker build -t ceg-calc .
+docker run --rm -p 4173:4173 ceg-calc
+```
+
+Ardından `http://localhost:4173` adresini açın. `GEMINI_API_KEY` gibi yerel değerler için `.env.example` dosyasını kopyalayıp `.env` kullanın; gerçek anahtarları repoya eklemeyin.
+
+Dağıtım adımı, oluşturulan imajı hedef ortama göndermek ve aynı port eşlemesiyle çalıştırmaktır:
+
+```bash
+docker tag ceg-calc <registry>/ceg-calc:<tag>
+docker push <registry>/ceg-calc:<tag>
 ```
 
 Android debug APK oluşturmak için:
