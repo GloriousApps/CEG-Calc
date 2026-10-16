@@ -3,8 +3,10 @@ const path = require('path');
 
 const createWindow = () => {
   const window = new BrowserWindow({
-    width: 1180,
-    height: 760,
+    // Keep the first portable launch compact while leaving enough room for
+    // the desktop two-column calculator layout.
+    width: 920,
+    height: 640,
     minWidth: 680,
     minHeight: 560,
     resizable: true,
