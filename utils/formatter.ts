@@ -288,6 +288,12 @@ export const builderToDisplay = (builder: BuilderState, buffer: string, preferre
 // Helper to format a BuilderState + inputBuffer into a compact expression string
 // e.g. "5' 9\"" or "5' 9\" 1/2" or "SQ 3' 2\"" or "1/2"
 export const builderToExpressionString = (b: BuilderState, buffer: string): string => {
+    // A raw number has no measurement unit until the user commits Feet/Inch/Yard.
+    // Do not render the temporary value with a feet mark in the live expression.
+    if (b.feet === null && b.inch === null && b.yard === null && b.numerator === null && b.denominator === null) {
+        return buffer || '';
+    }
+
     const dimPrefix = getDimPrefix(b.dimension);
 
     // Determine the active value being typed (mirrors builderToDisplay preview logic)
@@ -298,7 +304,7 @@ export const builderToExpressionString = (b: BuilderState, buffer: string): stri
     let previewDenom = b.denominator;
 
     if (buffer) {
-        const val = parseInt(buffer);
+        const val = parseFloat(buffer);
         if (b.yard !== null) {
             if (b.feet === null) previewFeet = val;
         }

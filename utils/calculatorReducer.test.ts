@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CalculatorActionType, calculatorReducer, initialCalculatorState } from './calculatorReducer';
 import { Operator } from '../types';
-import { builderToDisplay, formatConstructionUnit } from './formatter';
+import { builderToDisplay, builderToExpressionString, formatConstructionUnit } from './formatter';
 import { getTapeDimensionLabel } from './tape';
 
 const reduce = (state: typeof initialCalculatorState, action: Parameters<typeof calculatorReducer>[1]) =>
@@ -34,6 +34,15 @@ describe('calculator reducer', () => {
     expect(state.displayValue).toBe(6);
     expect(state.tape).toHaveLength(1);
     expect(state.tape[0].isUnitless).toBe(true);
+  });
+
+  it('does not mark a unitless live expression as feet', () => {
+    let state = initialCalculatorState;
+
+    state = reduce(state, { type: CalculatorActionType.NUMBER, payload: '125' });
+    state = reduce(state, { type: CalculatorActionType.OPERATOR, payload: Operator.Add });
+
+    expect(state.liveExpression).toBe('125 +');
   });
 
   it('repeats the last completed operation when equals is pressed again', () => {
@@ -190,5 +199,12 @@ describe('construction formatter', () => {
     );
 
     expect(formatted.inch).toBe(3.5);
+  });
+
+  it('does not add a feet mark to an uncommitted unitless number', () => {
+    expect(builderToExpressionString(
+      { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
+      '125'
+    )).toBe('125');
   });
 });
