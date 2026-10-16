@@ -258,6 +258,10 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     ? convertBuilderToDecimal(state.builder, state.inputBuffer)
                     : state.displayValue;
 
+                if (!Number.isFinite(valueToConvert)) {
+                    return { ...state, errorMessage: 'Geçerli bir dönüşüm değeri girin.' };
+                }
+
                 return {
                     ...state,
                     isConversionMode: false,
@@ -620,13 +624,16 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
 
         case CalculatorActionType.MEMORY_STORE: {
             const hasNewInput = state.builder.feet !== null || state.builder.inch !== null || state.builder.yard !== null || state.builder.numerator !== null || state.inputBuffer !== '';
+            const value = hasNewInput ? convertBuilderToDecimal(state.builder, state.inputBuffer) : state.displayValue;
+            if (!Number.isFinite(value)) return { ...state, errorMessage: 'Geçersiz değer belleğe kaydedilemez.' };
             return {
                 ...state,
-                memory: hasNewInput ? convertBuilderToDecimal(state.builder, state.inputBuffer) : state.displayValue,
+                memory: value,
                 memoryHasValue: true,
                 memoryDimension: hasNewInput ? state.builder.dimension : state.activeDimension,
                 memoryIsUnitless: hasNewInput ? isBuilderUnitless(state.builder) : state.isUnitless,
                 memoryPreferredUnit: state.preferredUnit,
+                errorMessage: null,
             };
         }
 
