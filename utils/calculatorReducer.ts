@@ -1,5 +1,5 @@
 import { CalculatorState, Operator, BuilderState } from '../types';
-import { convertBuilderToDecimal } from './formatter';
+import { convertBuilderToDecimal, builderToExpressionString, decimalToExpressionString } from './formatter';
 
 // Actions
 export enum CalculatorActionType {
@@ -46,6 +46,7 @@ export const initialCalculatorState: CalculatorState = {
     displayValue: 0,
     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
     inputBuffer: '',
+    liveExpression: '',
     operator: Operator.None,
     waitingForOperand: false,
     previousValue: null,
@@ -170,6 +171,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
         case CalculatorActionType.NUMBER: {
             const num = action.payload;
             if (state.waitingForOperand) {
+                const isNewOperation = state.operator === Operator.None;
                 return {
                     ...resetConversion(state),
                     inputBuffer: num,
@@ -177,6 +179,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     waitingForOperand: false,
                     lastOperator: Operator.None,
                     lastOperand: null,
+                    liveExpression: isNewOperation ? '' : state.liveExpression,
                     errorMessage: null
                 };
             } else {
@@ -185,6 +188,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     inputBuffer: state.inputBuffer + num,
                     lastOperator: Operator.None,
                     lastOperand: null,
+                    liveExpression: state.liveExpression,
                     errorMessage: null
                 };
             }
@@ -192,6 +196,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
 
         case CalculatorActionType.DECIMAL: {
             if (state.waitingForOperand) {
+                const isNewOperation = state.operator === Operator.None;
                 return {
                     ...resetConversion(state),
                     inputBuffer: '0.',
@@ -199,6 +204,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     waitingForOperand: false,
                     lastOperator: Operator.None,
                     lastOperand: null,
+                    liveExpression: isNewOperation ? '' : state.liveExpression,
                     errorMessage: null
                 };
             } else {
@@ -209,6 +215,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                         inputBuffer: state.inputBuffer + nextBuffer,
                         lastOperator: Operator.None,
                         lastOperand: null,
+                        liveExpression: state.liveExpression,
                         errorMessage: null
                     };
             }
@@ -411,6 +418,9 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 // CRITICAL FIX: Also preserve isUnitless from previous result when no new input
                 // Otherwise, pressing × after 4 INCH 1/2 result would incorrectly show 0.375 (unitless)
                 const effectiveIsUnitless = hasNewInput ? currentInputUnitless : state.isUnitless;
+                const operandStr = hasNewInput
+                    ? builderToExpressionString(state.builder, state.inputBuffer)
+                    : decimalToExpressionString(state.displayValue, state.preferredUnit, state.isUnitless, 64);
 
                 return {
                     ...resetConversion(state),
@@ -424,6 +434,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     isUnitless: effectiveIsUnitless,
                     lastOperator: Operator.None,
                     lastOperand: null,
+                    liveExpression: `${operandStr} ${nextOperator}`,
                     errorMessage: null
                 };
             } else if (!hasNewInput && state.waitingForOperand && state.operator) {
@@ -436,6 +447,9 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
             } else if (state.operator) {
                 const result = performCalculation(state.operator, state.previousValue, inputValue);
                 const currentInputDim = state.builder.dimension;
+                const operandStr = hasNewInput
+                    ? builderToExpressionString(state.builder, state.inputBuffer)
+                    : decimalToExpressionString(state.displayValue, state.preferredUnit, state.isUnitless, 64);
                 const metadata = result === null ? null : getCalculationMetadata(
                     state.operator,
                     state.isUnitless,
@@ -463,6 +477,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     activeDimension: metadata.dimension,
                     lastOperator: Operator.None,
                     lastOperand: null,
+                    liveExpression: `${state.liveExpression} ${operandStr} ${nextOperator}`,
                     errorMessage: null
                 };
             }
@@ -495,6 +510,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
                     isUnitless: repeatedMetadata.isUnitless,
                     activeDimension: repeatedMetadata.dimension,
+                    liveExpression: `${state.liveExpression} ${state.lastOperand}`.trim(),
                     errorMessage: null,
                     tape: [
                         ...state.tape,
@@ -576,6 +592,10 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 autoConvertedUnit = 'yard';
             }
 
+            const finalOperandStr = hasNewInput
+                ? builderToExpressionString(state.builder, state.inputBuffer)
+                : decimalToExpressionString(state.displayValue, state.preferredUnit, state.isUnitless, 64);
+
             return {
                 ...resetConversion(state), // First reset
                 displayValue: result,
@@ -595,6 +615,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 convertedDimension: resultDim,
                 isConversionMode: !!autoConvertedUnit,
                 preferredUnit: autoConvertedUnit || state.preferredUnit,
+                liveExpression: `${state.liveExpression} ${finalOperandStr}`.trim(),
                 errorMessage: null,
                 tape: [
                     ...state.tape,
@@ -651,6 +672,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 activeDimension: state.memoryDimension,
                 isUnitless: state.memoryIsUnitless,
                 preferredUnit: state.memoryPreferredUnit,
+                liveExpression: '',
             };
         }
 
@@ -703,6 +725,7 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 activeDimension: entry.dimension,
                 isUnitless: entry.isUnitless,
                 preferredUnit: entry.preferredUnit,
+                liveExpression: '',
             };
         }
 

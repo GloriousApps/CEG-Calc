@@ -3,7 +3,7 @@ import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import Display from './components/Display';
 import CalculatorButton from './components/CalculatorButton';
 import { ButtonType, Operator } from './types';
-import { formatConstructionUnit, builderToDisplay } from './utils/formatter';
+import { formatConstructionUnit, builderToDisplay, builderToExpressionString } from './utils/formatter';
 import { calculatorReducer, initialCalculatorState, CalculatorActionType } from './utils/calculatorReducer';
 import { getTapeDimensionLabel } from './utils/tape';
 import { checkForUpdate, downloadUpdate, installAPK, GithubRelease } from './utils/updateChecker';
@@ -237,8 +237,10 @@ export default function App() {
       state.isUnitless,
       fractionDenominator,
       normalDecimalPlaces,
-      engineeringDecimalPlaces
-    );
+       engineeringDecimalPlaces
+     );
+  const currentOperandStr = builderToExpressionString(state.builder, state.inputBuffer);
+  const liveExpressionDisplay = [state.liveExpression, currentOperandStr].filter(Boolean).join(' ');
 
   return (
     <div className={`flex min-h-[100dvh] w-full select-none items-center justify-center bg-[#e7edf2] p-3 font-display text-[#101820] sm:p-6 dark:bg-[#0d141a] dark:text-white ${visualTheme === 'aero' ? 'aero-glass-background' : ''}`}>
@@ -254,9 +256,18 @@ export default function App() {
               className={`absolute right-0 top-0 z-20 h-11 w-11 rounded-lg border border-[#c7d4e0] bg-[#e7edf2] text-2xl leading-none text-[#526274] active:translate-y-px dark:border-[#2a3b4e] dark:bg-[#252d36] dark:text-[#c0cad7] ${visualTheme === 'aero' ? 'aero-glass-control' : ''}`}
             >
               ⚙
-            </button>
-          </div>
-          <div className="flex-1 min-h-0 flex flex-col justify-end">
+           </button>
+           </div>
+           <div className="flex-1 min-h-0 flex flex-col justify-end">
+           <div className={`mb-2 w-full rounded-xl border border-[#c6d5e2] bg-[#f8fafc] px-4 py-2 shadow-inner dark:border-[#16304a] dark:bg-[#0d1114] ${visualTheme === 'aero' ? 'aero-glass-display' : ''}`}>
+             <div className="flex items-center justify-between w-full h-4 text-[#85909d] text-[9px] font-mono tracking-[0.16em] uppercase">
+               <span>İşlem</span>
+               {liveExpressionDisplay && <span className="text-[9px] text-[#85909d]">{state.operator !== Operator.None ? '...' : ''}</span>}
+             </div>
+             <div className="w-full overflow-x-auto whitespace-nowrap font-mono text-sm sm:text-lg leading-snug text-[#17212b] dark:text-[#f1f3f6]">
+               {liveExpressionDisplay || <span className="text-[#9aa6b2] dark:text-[#5d6670]">—</span>}
+             </div>
+           </div>
            <Display value={displayData} onBackspace={handleBackspace} memoryActive={state.memoryHasValue} aeroGlass={visualTheme === 'aero'} errorMessage={state.errorMessage} />
           </div>
         </section>

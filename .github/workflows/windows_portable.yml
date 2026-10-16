@@ -19,5 +19,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CEG_Calc_Portable_Windows
-          path: release/windows/CEG_Calc_Portable_v1.0.0.exe
+          path: release/windows/CEG_Calc_Portable_v*.exe
           if-no-files-found: error
