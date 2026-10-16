@@ -49,6 +49,10 @@ export const initialCalculatorState: CalculatorState = {
     operator: Operator.None,
     waitingForOperand: false,
     previousValue: null,
+    lastOperator: Operator.None,
+    lastOperand: null,
+    lastOperandDimension: 1,
+    lastOperandIsUnitless: true,
     memory: 0,
     memoryHasValue: false,
     memoryDimension: 1,
@@ -171,12 +175,16 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     inputBuffer: num,
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
                     waitingForOperand: false,
+                    lastOperator: Operator.None,
+                    lastOperand: null,
                     errorMessage: null
                 };
             } else {
                 return {
                     ...resetConversion(state),
                     inputBuffer: state.inputBuffer + num,
+                    lastOperator: Operator.None,
+                    lastOperand: null,
                     errorMessage: null
                 };
             }
@@ -189,6 +197,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     inputBuffer: '0.',
                     builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
                     waitingForOperand: false,
+                    lastOperator: Operator.None,
+                    lastOperand: null,
                     errorMessage: null
                 };
             } else {
@@ -197,6 +207,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 return {
                         ...resetConversion(state),
                         inputBuffer: state.inputBuffer + nextBuffer,
+                        lastOperator: Operator.None,
+                        lastOperand: null,
                         errorMessage: null
                     };
             }
@@ -406,6 +418,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     displayValue: inputValue,
                     activeDimension: currentDim,
                     isUnitless: effectiveIsUnitless,
+                    lastOperator: Operator.None,
+                    lastOperand: null,
                     errorMessage: null
                 };
             } else if (!hasNewInput && state.waitingForOperand && state.operator) {
@@ -443,6 +457,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     inputBuffer: '',
                     isUnitless: metadata.isUnitless,
                     activeDimension: metadata.dimension,
+                    lastOperator: Operator.None,
+                    lastOperand: null,
                     errorMessage: null
                 };
             }
@@ -450,7 +466,44 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
         }
 
         case CalculatorActionType.EQUAL: {
-            if (!state.operator || state.previousValue === null) return state;
+            if (!state.operator || state.previousValue === null) {
+                if (state.lastOperator === Operator.None || state.lastOperand === null) return state;
+
+                const repeatedResult = performCalculation(state.lastOperator, state.displayValue, state.lastOperand);
+                if (repeatedResult === null) return { ...state, errorMessage: 'Sıfıra bölme yapılamaz.' };
+
+                const repeatedMetadata = getCalculationMetadata(
+                    state.lastOperator,
+                    state.isUnitless,
+                    state.activeDimension,
+                    state.lastOperandIsUnitless,
+                    state.lastOperandDimension
+                );
+                if (!repeatedMetadata) return { ...state, errorMessage: 'Bu boyutlarla işlem yapılamaz.' };
+
+                return {
+                    ...resetConversion(state),
+                    displayValue: repeatedResult,
+                    previousValue: null,
+                    operator: Operator.None,
+                    waitingForOperand: true,
+                    inputBuffer: '',
+                    builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
+                    isUnitless: repeatedMetadata.isUnitless,
+                    activeDimension: repeatedMetadata.dimension,
+                    errorMessage: null,
+                    tape: [
+                        ...state.tape,
+                        {
+                            expression: `${state.displayValue} ${state.lastOperator} ${state.lastOperand}`,
+                            result: repeatedResult,
+                            dimension: repeatedMetadata.dimension,
+                            isUnitless: repeatedMetadata.isUnitless,
+                            preferredUnit: state.preferredUnit
+                        }
+                    ].slice(-50)
+                };
+            }
 
             const hasNewInput = state.builder.feet !== null || state.builder.inch !== null || state.builder.yard !== null || state.builder.numerator !== null || state.inputBuffer !== '';
             let currentValue = hasNewInput ? convertBuilderToDecimal(state.builder, state.inputBuffer) : state.displayValue;
@@ -529,6 +582,10 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
                 isUnitless: newIsUnitless,
                 activeDimension: resultDim,
+                lastOperator: state.operator,
+                lastOperand: currentValue,
+                lastOperandDimension: currentInputDim,
+                lastOperandIsUnitless: currentInputUnitless,
                 // Apply auto-conversion if valid unit is found, otherwise null (displays as preferred/default)
                 convertedUnit: autoConvertedUnit,
                 convertedDimension: resultDim,
@@ -579,6 +636,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 displayValue: state.memory,
                 previousValue: null,
                 operator: Operator.None,
+                lastOperator: Operator.None,
+                lastOperand: null,
                 waitingForOperand: true,
                 inputBuffer: '',
                 builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },
@@ -629,6 +688,8 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                 displayValue: entry.result,
                 previousValue: null,
                 operator: Operator.None,
+                lastOperator: Operator.None,
+                lastOperand: null,
                 waitingForOperand: true,
                 inputBuffer: '',
                 builder: { feet: null, inch: null, yard: null, numerator: null, denominator: null, dimension: 1 },

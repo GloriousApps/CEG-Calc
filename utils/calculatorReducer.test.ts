@@ -36,6 +36,19 @@ describe('calculator reducer', () => {
     expect(state.tape[0].isUnitless).toBe(true);
   });
 
+  it('repeats the last completed operation when equals is pressed again', () => {
+    let state = initialCalculatorState;
+
+    state = reduce(state, { type: CalculatorActionType.NUMBER, payload: '2' });
+    state = reduce(state, { type: CalculatorActionType.OPERATOR, payload: Operator.Add });
+    state = reduce(state, { type: CalculatorActionType.NUMBER, payload: '3' });
+    state = reduce(state, { type: CalculatorActionType.EQUAL });
+    state = reduce(state, { type: CalculatorActionType.EQUAL });
+
+    expect(state.displayValue).toBe(8);
+    expect(state.tape).toHaveLength(2);
+  });
+
   it('rejects division by zero without creating an invalid tape entry', () => {
     let state = initialCalculatorState;
 
