@@ -366,7 +366,7 @@ export default function App() {
         onOrientationChange={handleOrientationChange}
         onCheckForUpdates={runUpdateCheck}
         onStartUpdate={startSettingsUpdate}
-        version="v2.3.0"
+        version="v2.3.1"
       />
     </div>
   );

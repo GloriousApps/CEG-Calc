@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/release-v2.3.0-0d3171?style=for-the-badge" alt="Release v2.3.0" />
+  <img src="https://img.shields.io/badge/release-v2.3.1-0d3171?style=for-the-badge" alt="Release v2.3.1" />
   <img src="https://img.shields.io/badge/build-passing-16a34a?style=for-the-badge" alt="Build passing" />
   <img src="https://img.shields.io/badge/android-8.0%2B-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Android 8.0+" />
 </p>
@@ -102,4 +102,4 @@ cd android
 
 ## Sürüm
 
-Güncel mobil sürüm: `v2.3.0` · Windows Portable: `v2.3.0`
+Güncel mobil sürüm: `v2.3.1` · Windows Portable: `v2.3.1`
