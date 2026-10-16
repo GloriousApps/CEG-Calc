@@ -5,6 +5,7 @@ import CalculatorButton from './components/CalculatorButton';
 import { ButtonType, Operator } from './types';
 import { formatConstructionUnit, builderToDisplay } from './utils/formatter';
 import { calculatorReducer, initialCalculatorState, CalculatorActionType } from './utils/calculatorReducer';
+import { getTapeDimensionLabel } from './utils/tape';
 import { checkForUpdate, downloadUpdate, installAPK, GithubRelease } from './utils/updateChecker';
 import { UpdateModal } from './components/UpdateModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -317,7 +318,7 @@ export default function App() {
                     return (
                       <button key={`${entry.expression}-${index}`} type="button" onClick={() => { dispatch({ type: CalculatorActionType.TAPE_RECALL, payload: index }); setShowTape(false); }} className="w-full rounded-xl bg-[#eef3f7] px-4 py-3 text-left transition-colors hover:bg-[#e1e8ee] dark:bg-[#171e24] dark:hover:bg-[#26333f]">
                         <div className="font-mono text-xs text-[#647482] dark:text-[#9aa8b6]">{entry.expression}</div>
-                        <div className="mt-1 flex items-center justify-between"><span className="font-mono text-lg text-[#17212b] dark:text-white">{Number(entry.result.toFixed(6))}</span><span className="text-[10px] font-bold tracking-wider text-[#19ad9b]">{entry.dimension === 3 ? 'CB' : entry.dimension === 2 ? 'SQ' : ''}</span></div>
+                        <div className="mt-1 flex items-center justify-between"><span className="font-mono text-lg text-[#17212b] dark:text-white">{Number(entry.result.toFixed(6))}</span><span className="text-[10px] font-bold tracking-wider text-[#19ad9b]">{getTapeDimensionLabel(entry)}</span></div>
                       </button>
                     );
                   })}

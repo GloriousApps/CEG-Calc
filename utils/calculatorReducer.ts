@@ -315,6 +315,13 @@ export const calculatorReducer = (state: CalculatorState, action: CalculatorActi
                     activeDimension: currentDim,
                     isUnitless: effectiveIsUnitless
                 };
+            } else if (!hasNewInput && state.waitingForOperand && state.operator) {
+                // Consecutive operator presses only replace the pending operator.
+                // Never apply the previous operator to the displayed result again.
+                return {
+                    ...state,
+                    operator: nextOperator
+                };
             } else if (state.operator) {
                 const result = performCalculation(state.operator, state.previousValue, inputValue);
                 const newIsUnitless = state.isUnitless && currentInputUnitless;
